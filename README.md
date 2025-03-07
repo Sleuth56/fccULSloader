@@ -25,7 +25,6 @@ FCC Tool is a command-line application that creates and maintains a complete loc
 
 The offline nature of this tool makes it particularly valuable for amateur radio operators in the field, emergency communications scenarios, or any situation where internet access may be limited or unavailable.
 
-> **Database Documentation**: I created a detailed information about the FCC database structure, tables, fields, and their meanings, see the [FCC Database Documentation](FCC_DATABASE_DOC.md).
 
 [↑ Back to Table of Contents](#table-of-contents-)
 
@@ -278,6 +277,8 @@ The FCC database contains multiple tables with information about amateur radio l
 - `LA`: License attachments
 - `SC`: Special conditions
 - `SF`: Special free form conditions
+
+> I created a detailed information about the FCC database structure, tables, fields, and their meanings, see the [FCC Database Documentation](FCC_DATABASE_DOC.md).
 
 The FCC data is sourced from the [FCC's ULS database downloads page](https://www.fcc.gov/uls/transactions/daily-weekly), specifically the Amateur Radio Service database file (`l_amat.zip`).
 
