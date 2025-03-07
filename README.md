@@ -101,10 +101,109 @@ You can combine name and state filters to perform more targeted searches, such a
 
 ## Installation
 
+### Option 1: Using the Executable (Recommended)
+
+FCC Tool is available as a standalone executable for Windows, Linux, and macOS. This is the easiest way to get started.
+
+#### Windows
+
+1. **Download the latest release** from the [Releases page](https://github.com/tirandagan/fccULSloader/releases).
+2. **Extract the ZIP file** to a location of your choice.
+3. **Run the executable** (`fcc-tool.exe`) from the extracted folder.
+
+#### Linux
+
+1. **Download the latest release** from the [Releases page](https://github.com/tirandagan/fccULSloader/releases).
+2. **Extract the tarball**:
+   ```
+   tar -xzf fcc-tool-linux.tar.gz
+   ```
+3. **Make the executable file executable**:
+   ```
+   chmod +x fcc-tool-linux/fcc-tool/fcc-tool
+   ```
+4. **Run the executable**:
+   ```
+   ./fcc-tool-linux/fcc-tool/fcc-tool
+   ```
+
+#### macOS
+
+1. **Download the latest release** from the [Releases page](https://github.com/tirandagan/fccULSloader/releases).
+2. **Extract the ZIP file** to a location of your choice.
+3. **Run the application** by double-clicking the `fcc-tool` app in the extracted folder.
+
+### Option 2: Building from Source
+
+If you prefer to build the executable from source, follow these steps:
+
+#### Prerequisites
+
+- Python 3.7 or higher
+- pip (Python package manager)
+
+#### Windows
+
 1. **Clone the repository**:
    ```
-   git clone https://github.com/yourusername/fcc-tool.git
-   cd fcc-tool
+   git clone https://github.com/tirandagan/fccULSloader.git
+   cd fccULSloader
+   ```
+
+2. **Run the installer script**:
+   ```
+   install.bat
+   ```
+
+3. **Run the executable**:
+   ```
+   dist\fcc-tool-windows\fcc-tool\fcc-tool.exe
+   ```
+
+#### Linux
+
+1. **Clone the repository**:
+   ```
+   git clone https://github.com/tirandagan/fccULSloader.git
+   cd fccULSloader
+   ```
+
+2. **Run the installer script**:
+   ```
+   ./install.sh
+   ```
+
+3. **Run the executable**:
+   ```
+   ./dist/fcc-tool-linux/fcc-tool/fcc-tool
+   ```
+
+#### macOS
+
+1. **Clone the repository**:
+   ```
+   git clone https://github.com/tirandagan/fccULSloader.git
+   cd fccULSloader
+   ```
+
+2. **Run the installer script**:
+   ```
+   ./install_macos.sh
+   ```
+
+3. **Run the executable**:
+   ```
+   open ./dist/fcc-tool-macos/fcc-tool/fcc-tool.app
+   ```
+
+### Option 3: Running from Python Source
+
+You can also run the application directly from the Python source code:
+
+1. **Clone the repository**:
+   ```
+   git clone https://github.com/tirandagan/fccULSloader.git
+   cd fccULSloader
    ```
 
 2. **Install dependencies**:
@@ -112,11 +211,33 @@ You can combine name and state filters to perform more targeted searches, such a
    pip install -r requirements.txt
    ```
 
-3. **Initial setup**:
+3. **Run the application**:
    ```
-   python fcc_tool.py --update
+   python fcc_tool.py
    ```
-   This will download the latest FCC database and set up the necessary files.
+
+## Project Structure
+
+The project is organized as follows:
+
+```
+fcc-tool/
+├── src/                  # Source code directory
+│   ├── fcc_tool.py       # Main application script
+│   ├── modules/          # Application modules
+│   └── tests/            # Test files
+├── dist/                 # Distribution directory (created during build)
+│   ├── fcc-tool-windows/ # Windows executable
+│   ├── fcc-tool-linux/   # Linux executable
+│   └── fcc-tool-macos/   # macOS executable
+├── resources/            # Application resources
+├── build_executable.py   # Script to build executables
+├── install.bat           # Windows installation script
+├── install.sh            # Linux installation script
+├── install_macos.sh      # macOS installation script
+├── README.md             # This documentation
+└── requirements.txt      # Python dependencies
+```
 
 ## Usage
 

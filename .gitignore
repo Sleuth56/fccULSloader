@@ -6,6 +6,8 @@ ENV/
 
 # Python cache files
 __pycache__/
+modules/__pycache__/
+modules/**/__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -38,4 +40,7 @@ extraction/
 # Distribution / packaging
 dist/
 build/
-*.egg-info/ 
+*.egg-info/
+
+# Build artifacts
+*.spec 
