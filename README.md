@@ -220,7 +220,7 @@ python fcc_tool.py --name "Smith" --verbose
 
 ## Project Structure
 
-**[Project Structure]**
+**[[Project Structure](#project-structure)]**
 
 The project is organized as follows:
 
@@ -263,7 +263,7 @@ fcc-tool/
 
 ## Configuration
 
-**[Configuration]**
+**[[Configuration](#configuration)]**
 
 The database path and other configuration settings are defined in the `modules/config.py` file. You can modify these settings to customize the tool's behavior:
 
@@ -276,7 +276,7 @@ The database path and other configuration settings are defined in the `modules/c
 
 ## Database Documentation
 
-**[Database Documentation]**
+**[[Database Documentation](#database-documentation)]**
 
 The FCC database contains multiple tables with information about amateur radio licenses. The primary tables used by FCC Tool are:
 
@@ -297,7 +297,7 @@ The FCC data is sourced from the [FCC's ULS database downloads page](https://www
 
 ## Troubleshooting
 
-**[Troubleshooting]**
+**[[Troubleshooting](#troubleshooting)]**
 
 ### Common Issues
 
@@ -314,7 +314,7 @@ The application logs are stored in the `logs/fcc_tool.log` file. If you encounte
 
 ## Contributing
 
-**[Contributing]**
+**[[Contributing](#contributing)]**
 
 Contributions are welcome! Please feel free to submit a Pull Request or open an Issue on GitHub.
 
