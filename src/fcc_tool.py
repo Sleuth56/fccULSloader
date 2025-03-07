@@ -101,7 +101,7 @@ from modules.database import FCCDatabase
 from modules.filesystemtools import ensure_directory
 
 # Version information
-__version__ = "1.5.0"
+__version__ = "1.6.0"
 APP_NAME = "FCC Tool"
 
 # Utility functions

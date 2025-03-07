@@ -10,6 +10,14 @@ import sys
 import platform
 import argparse
 import importlib.util
+from pathlib import Path
+
+# Add the src directory to Python path
+src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, src_dir)
+
+# Now we can import the version
+from fcc_tool import __version__ as VERSION
 
 # Define paths
 DIST_DIR = "dist"
@@ -74,6 +82,12 @@ def install_requirements():
     print("Installing required packages...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+
+def get_platform_config(platform):
+    if platform not in PLATFORMS:
+        print(f"Unsupported target platform: {platform}")
+        return None
+    return PLATFORMS[platform]
 
 def build_executable(target_platform=None, quiet=False):
     """Build the executable using PyInstaller for the specified platform"""
@@ -181,6 +195,9 @@ def build_executable(target_platform=None, quiet=False):
                 if not quiet:
                     print(f"Removing {spec_file}...")
                 os.remove(spec_file)
+        
+        if not quiet:
+            print(f"Executable created: {platform_config['executable_dir']}/fcc-tool-{VERSION}{platform_config['extension']}")
         
         return True
     except subprocess.CalledProcessError as e:
@@ -302,14 +319,11 @@ echo
 def main():
     """Main function to parse arguments and build the executable"""
     parser = argparse.ArgumentParser(description="Build FCC Tool executable")
-    parser.add_argument("--platform", choices=["windows", "linux", "macos"], 
-                        help="Target platform (windows, linux, macos)")
-    parser.add_argument("--clean", action="store_true", 
-                        help="Clean build directories before building")
-    parser.add_argument("--install-deps", action="store_true", 
-                        help="Install required dependencies before building")
-    parser.add_argument("--quiet", action="store_true",
-                        help="Suppress output messages")
+    parser.add_argument("--platform", choices=["windows", "linux", "macos"], help="Target platform")
+    parser.add_argument("--clean", action="store_true", help="Clean build directories before building")
+    parser.add_argument("--install-deps", action="store_true", help="Install required dependencies before building")
+    parser.add_argument("--quiet", action="store_true", help="Suppress output")
+    parser.add_argument("--get-version", action="store_true", help="Print version and exit")
     
     args = parser.parse_args()
     
@@ -319,6 +333,14 @@ def main():
     if args.install_deps:
         install_requirements()
     
+    if args.get_version:
+        print(VERSION)
+        sys.exit(0)
+
+    if not args.platform:
+        print("Error: Platform must be specified")
+        sys.exit(1)
+
     success = build_executable(args.platform, args.quiet)
     
     if success:

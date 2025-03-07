@@ -19,8 +19,7 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-REM Clean previous build artifacts silently
-if exist dist rmdir /s /q dist > nul 2>&1
+REM Clean only build artifacts, preserving dist folder
 if exist build rmdir /s /q build > nul 2>&1
 if exist *.spec del /f /q *.spec > nul 2>&1
 
@@ -32,7 +31,7 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-REM Clean up silently - ensure build folder is removed
+REM Clean up silently - but preserve dist folder
 echo Cleaning up build artifacts...
 if exist build rmdir /s /q build > nul 2>&1
 if exist *.spec del /f /q *.spec > nul 2>&1
@@ -46,6 +45,8 @@ REM Double-check that build folder is gone (sometimes it's recreated)
 timeout /t 1 /nobreak > nul
 if exist build rmdir /s /q build > nul 2>&1
 
+REM Get version from build_executable.py directly
+for /f "tokens=*" %%i in ('python create_build\build_executable.py --get-version') do set VERSION=%%i
+
 echo Build completed successfully.
-echo Executable: dist\fcc-tool-windows\fcc-tool.exe
-pause > nul 
+echo Executable: dist\fcc-tool-windows\fcc-tool-%VERSION%.exe

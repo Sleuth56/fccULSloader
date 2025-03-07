@@ -16,8 +16,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Clean previous build artifacts silently
-rm -rf dist/ build/ *.spec &> /dev/null
+# Clean build artifacts but preserve dist folder
+rm -rf build/ *.spec &> /dev/null
 
 echo "Building executable..."
 python3 create_build/build_executable.py --platform linux --quiet &> /dev/null
@@ -26,7 +26,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Clean up silently
+# Clean up silently but preserve dist folder
 echo "Cleaning up build artifacts..."
 rm -rf build/ *.spec &> /dev/null
 find . -name "__pycache__" -type d -exec rm -rf {} + &> /dev/null
@@ -37,5 +37,8 @@ rm -f fcc-tool-*.pkg fcc-tool-*.manifest warn-fcc-tool-*.txt &> /dev/null
 sleep 1
 rm -rf build/ &> /dev/null
 
+# Get version from build_executable.py directly
+VERSION=$(python3 create_build/build_executable.py --get-version)
+
 echo "Build completed successfully."
-echo "Executable: dist/fcc-tool-linux/fcc-tool" 
+echo "Executable: dist/fcc-tool-linux/fcc-tool-${VERSION}" 
