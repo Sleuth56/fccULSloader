@@ -41,7 +41,7 @@ The log directory is automatically created if it doesn't exist.
 Log Format:
 ----------
 Logs use the format: '%(asctime)s - %(levelname)s - %(message)s'
-Example: '2024-03-07 12:34:56 - INFO - Starting database update'
+Example: '2025-03-07 12:34:56 - INFO - Starting database update'
 """
 
 import logging
