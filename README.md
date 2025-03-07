@@ -25,7 +25,7 @@ FCC Tool is a command-line application that creates and maintains a complete loc
 
 The offline nature of this tool makes it particularly valuable for amateur radio operators in the field, emergency communications scenarios, or any situation where internet access may be limited or unavailable.
 
-> **Database Documentation**: For detailed information about the FCC database structure, tables, fields, and their meanings, see the [FCC Database Documentation](FCC_DATABASE_DOC.md).
+> **Database Documentation**: I created a detailed information about the FCC database structure, tables, fields, and their meanings, see the [FCC Database Documentation](FCC_DATABASE_DOC.md).
 
 [↑ Back to Table of Contents](#table-of-contents-)
 
@@ -60,7 +60,6 @@ SOFTWARE.
 ## Features
 
 ### Database Management
-
 **[[Features](#features) > Database Management]**
 
 FCC Tool can automatically download and update the FCC amateur radio license database from the [FCC's ULS database downloads page](https://www.fcc.gov/uls/transactions/daily-weekly). The tool checks for updates by comparing the last modified date of the remote file with your local copy, ensuring you only download new data when it's available.
@@ -82,7 +81,6 @@ The tool also provides several options for maintaining and optimizing the databa
 [↑ Back to Table of Contents](#table-of-contents-)
 
 ### Query Capabilities
-
 **[[Features](#features) > Query Capabilities]**
 
 #### Call Sign Lookup
@@ -128,7 +126,6 @@ Download the latest release from the [Releases page](https://github.com/tirandag
 ## Usage
 
 ### Command Line Options
-
 **[[Usage](#usage) > Command Line Options]**
 
 FCC Tool provides a comprehensive set of command-line options for database management and querying:
@@ -159,7 +156,6 @@ FCC Tool provides a comprehensive set of command-line options for database manag
 [↑ Back to Table of Contents](#table-of-contents-)
 
 ### Examples
-
 **[[Usage](#usage) > Examples]**
 
 #### Database Management
@@ -220,8 +216,6 @@ python fcc_tool.py --name "Smith" --verbose
 
 ## Project Structure
 
-**[[Project Structure](#project-structure)]**
-
 The project is organized as follows:
 
 ```
@@ -263,8 +257,6 @@ fcc-tool/
 
 ## Configuration
 
-**[[Configuration](#configuration)]**
-
 The database path and other configuration settings are defined in the `modules/config.py` file. You can modify these settings to customize the tool's behavior:
 
 - `DB_PATH`: Path to the SQLite database file
@@ -275,8 +267,6 @@ The database path and other configuration settings are defined in the `modules/c
 [↑ Back to Table of Contents](#table-of-contents-)
 
 ## Database Documentation
-
-**[[Database Documentation](#database-documentation)]**
 
 The FCC database contains multiple tables with information about amateur radio licenses. The primary tables used by FCC Tool are:
 
@@ -297,8 +287,6 @@ The FCC data is sourced from the [FCC's ULS database downloads page](https://www
 
 ## Troubleshooting
 
-**[[Troubleshooting](#troubleshooting)]**
-
 ### Common Issues
 
 - **Database not found**: Run `python fcc_tool.py --update` to download and create the database.
@@ -313,8 +301,6 @@ The application logs are stored in the `logs/fcc_tool.log` file. If you encounte
 [↑ Back to Table of Contents](#table-of-contents-)
 
 ## Contributing
-
-**[[Contributing](#contributing)]**
 
 Contributions are welcome! Please feel free to submit a Pull Request or open an Issue on GitHub.
 
