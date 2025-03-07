@@ -369,8 +369,14 @@ The FCC database contains multiple tables with information about amateur radio l
 
 - `HD`: License header information (call sign, license status, etc.)
 - `EN`: Entity information (name, address, etc.)
+- `AM`: Amateur license information (operator class, etc.)
+- `HS`: License history information
+- `CO`: Comments associated with licenses
+- `LA`: License attachments
+- `SC`: Special conditions
+- `SF`: Special free form conditions
 
-For detailed information about the FCC database structure, tables, fields, and their meanings, please refer to the [FCC Database Documentation](FCC_DATABASE_DOC.md).
+For detailed information about the FCC database structure, tables, fields, and their meanings, please refer to the [FCC Database Documentation](FCC_DATABASE_DOC.md) included in this repository.
 
 The FCC data is sourced from the [FCC's ULS database downloads page](https://www.fcc.gov/uls/transactions/daily-weekly), specifically the Amateur Radio Service database file (`l_amat.zip`).
 
