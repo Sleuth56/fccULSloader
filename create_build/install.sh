@@ -1,38 +1,36 @@
 #!/bin/bash
 echo "FCC Tool Installer"
-echo "================="
-echo
 
 # Check for Python installation
 if ! command -v python3 &> /dev/null; then
-    echo "Python 3 is not installed or not in PATH."
+    echo "Error: Python 3 is not installed or not in PATH."
     echo "Please install Python 3.7 or higher."
     exit 1
 fi
 
-echo "Installing required packages..."
-pip3 install -r requirements.txt
+# Install required packages quietly
+echo "Installing dependencies..."
+pip3 install -q -r requirements.txt pyinstaller
 if [ $? -ne 0 ]; then
-    echo "Failed to install required packages."
+    echo "Error: Failed to install dependencies."
     exit 1
 fi
+
+# Clean previous build artifacts silently
+rm -rf dist/ build/ *.spec &> /dev/null
 
 echo "Building executable..."
-python3 create_build/build_executable.py --platform linux
+python3 create_build/build_executable.py --platform linux --quiet &> /dev/null
 if [ $? -ne 0 ]; then
-    echo "Failed to build executable."
+    echo "Error: Failed to build executable."
     exit 1
 fi
 
-echo "Cleaning up temporary build files..."
-rm -rf build/
-rm -f *.spec
-find . -name "__pycache__" -type d -exec rm -rf {} +
-find . -name "*.pyc" -delete
+# Clean up silently
+rm -rf build/ *.spec &> /dev/null
+find . -name "__pycache__" -type d -exec rm -rf {} + &> /dev/null
+find . -name "*.pyc" -delete &> /dev/null
+rm -f fcc-tool-*.pkg fcc-tool-*.manifest warn-fcc-tool-*.txt &> /dev/null
 
-echo
-echo "Installation completed successfully!"
-echo "The executable is located in the dist/fcc-tool-linux directory."
-echo
-echo "You can run the application by executing dist/fcc-tool-linux/fcc-tool"
-echo 
+echo "Build completed successfully."
+echo "Executable: dist/fcc-tool-linux/fcc-tool" 

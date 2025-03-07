@@ -75,7 +75,7 @@ def install_requirements():
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
 
-def build_executable(target_platform=None):
+def build_executable(target_platform=None, quiet=False):
     """Build the executable using PyInstaller for the specified platform"""
     if target_platform is None:
         # Detect current platform
@@ -87,15 +87,18 @@ def build_executable(target_platform=None):
         elif system == "linux":
             target_platform = "linux"
         else:
-            print(f"Unsupported platform: {system}")
+            if not quiet:
+                print(f"Unsupported platform: {system}")
             return False
     
     if target_platform not in PLATFORMS:
-        print(f"Unsupported target platform: {target_platform}")
+        if not quiet:
+            print(f"Unsupported target platform: {target_platform}")
         return False
     
     platform_config = PLATFORMS[target_platform]
-    print(f"Building executable for {target_platform}...")
+    if not quiet:
+        print(f"Building FCC Tool version {VERSION} for {target_platform}...")
     
     # Create platform-specific output directory
     os.makedirs(platform_config["executable_dir"], exist_ok=True)
@@ -120,19 +123,26 @@ def build_executable(target_platform=None):
     for src_file, dest_name in file_list:
         if os.path.exists(src_file):
             data_files.append(f"--add-data={src_file}{separator}.")
-        else:
+        elif not quiet:
             print(f"Warning: {src_file} not found, it will not be included in the executable")
     
     # Determine the path to fcc_tool.py
     if os.path.exists(os.path.join(SOURCE_DIR, "fcc_tool.py")):
         fcc_tool_path = os.path.join(SOURCE_DIR, "fcc_tool.py")
+        # Add modules directory if using source directory
+        modules_path = os.path.join(SOURCE_DIR, "modules")
     elif os.path.exists("fcc_tool.py"):
         fcc_tool_path = "fcc_tool.py"
+        # Add modules directory from root
+        modules_path = "modules"
     else:
-        print("Error: fcc_tool.py not found in src directory or root directory")
+        if not quiet:
+            print("Error: fcc_tool.py not found in src directory or root directory")
         return False
     
-    print(f"Using source file: {fcc_tool_path}")
+    if not quiet:
+        print(f"Using source file: {fcc_tool_path}")
+        print(f"Using modules path: {modules_path}")
     
     # Build command - using --onefile instead of --onedir for a single executable
     cmd = [
@@ -142,13 +152,26 @@ def build_executable(target_platform=None):
         "--clean",
         "--noconfirm",
         f"--distpath={platform_config['executable_dir']}",
+        "--hidden-import=modules.config",
+        "--hidden-import=modules.database",
+        "--hidden-import=modules.updater",
+        "--hidden-import=modules.logger",
+        "--hidden-import=modules.filesystemtools",
+        "--hidden-import=modules.fcc_code_defs",
+        f"--add-data={modules_path}{separator}modules",
     ] + icon_option + data_files + [fcc_tool_path]
     
     try:
-        subprocess.check_call(cmd)
+        if quiet:
+            # Redirect output to devnull if quiet mode is enabled
+            with open(os.devnull, 'w') as devnull:
+                subprocess.check_call(cmd, stdout=devnull, stderr=devnull)
+        else:
+            subprocess.check_call(cmd)
         return True
     except subprocess.CalledProcessError as e:
-        print(f"Error building executable: {e}")
+        if not quiet:
+            print(f"Error building executable: {e}")
         return False
 
 def create_directory_structure():
@@ -263,50 +286,33 @@ echo
     os.chmod("install_macos.sh", 0o755)
 
 def main():
-    """Main build function"""
+    """Main function to parse arguments and build the executable"""
     parser = argparse.ArgumentParser(description="Build FCC Tool executable")
-    parser.add_argument("--platform", choices=["windows", "linux", "macos", "all"], 
-                        help="Target platform (default: current platform)")
-    parser.add_argument("--skip-clean", action="store_true", 
-                        help="Skip cleaning build directories")
+    parser.add_argument("--platform", choices=["windows", "linux", "macos"], 
+                        help="Target platform (windows, linux, macos)")
+    parser.add_argument("--clean", action="store_true", 
+                        help="Clean build directories before building")
+    parser.add_argument("--install-deps", action="store_true", 
+                        help="Install required dependencies before building")
+    parser.add_argument("--quiet", action="store_true",
+                        help="Suppress output messages")
+    
     args = parser.parse_args()
     
-    if not args.skip_clean:
+    if args.clean:
         clean_build_directories()
     
-    install_requirements()
+    if args.install_deps:
+        install_requirements()
     
-    if args.platform == "all":
-        # Build for all platforms
-        success = True
-        for platform_name in PLATFORMS.keys():
-            if not build_executable(platform_name):
-                success = False
-        if not success:
-            print("Failed to build executables for all platforms.")
-            return 1
+    success = build_executable(args.platform, args.quiet)
+    
+    if success:
+        if not args.quiet:
+            print("Build completed successfully!")
+        return 0
     else:
-        # Build for specified or current platform
-        if not build_executable(args.platform):
-            print("Failed to build executable.")
-            return 1
-    
-    create_directory_structure()
-    create_platform_scripts()
-    
-    print("\nBuild completed successfully!")
-    if args.platform == "all":
-        print("Executables can be found in the following directories:")
-        for platform_name, config in PLATFORMS.items():
-            print(f"- {platform_name}: {config['executable_dir']}")
-    else:
-        platform_name = args.platform or platform.system().lower()
-        if platform_name == "darwin":
-            platform_name = "macos"
-        print(f"Executable can be found in the '{PLATFORMS[platform_name]['executable_dir']}' directory")
-    
-    print("Source code has been organized in the 'src' directory")
-    return 0
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main()) 

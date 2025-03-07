@@ -65,7 +65,7 @@ def ensure_directory_exists(directory_path):
     try:
         if not os.path.exists(directory_path):
             os.makedirs(directory_path, exist_ok=True)
-            logging.info(f"Created directory: {directory_path}")
+            #logging.info(f"Created directory: {directory_path}")
         return True
     except OSError as e:
         logging.error(f"Error creating directory {directory_path}: {e}")
