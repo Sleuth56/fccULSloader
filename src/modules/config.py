@@ -57,5 +57,8 @@ class Config:
     DB_PATH = os.path.join(DATA_PATH, "fcc_data.db")
     ZIP_FILE_URL = 'https://data.fcc.gov/download/pub/uls/complete/l_amat.zip'  # URL for the file
     USE_MULTITHREADING = False
-    # TABLES_TO_PROCESS = ["AM","EN","HD"]  # Full list of tables: ["AM", "CO", "EN", "HD", "HS", "LA", "SC", "SF"]
-    TABLES_TO_PROCESS = ["AM", "CO", "EN", "HD", "HS", "LA", "SC", "SF"]
+    
+    # For just the tables needed for the FCC Tool, uncomment the following line and comment the one above it
+    TABLES_TO_PROCESS = ["AM","EN","HD"]
+    # For a full download into the database of all FCC files, uncomment the following line and comment the one above it
+    # TABLES_TO_PROCESS = ["AM", "CO", "EN", "HD", "HS", "LA", "SC", "SF"]
