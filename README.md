@@ -2,27 +2,23 @@
 
 A comprehensive utility for managing and querying FCC amateur radio license database files, creating a local SQLite copy of the entire FCC ULS database for offline use.
 
-## Table of Contents
+## Table of Contents 📑
 
 - [Overview](#overview)
 - [Author and License](#author-and-license)
 - [Features](#features)
   - [Database Management](#database-management)
-    - [Downloading and Updating](#downloading-and-updating)
-    - [Maintenance and Optimization](#maintenance-and-optimization)
   - [Query Capabilities](#query-capabilities)
-    - [Call Sign Lookup](#call-sign-lookup)
-    - [Name Search](#name-search)
-    - [State Filtering](#state-filtering)
-    - [Combined Searches](#combined-searches)
 - [Installation](#installation)
+  - [Using the Executable](#using-the-executable-recommended)
+  - [Building from Source](#building-from-source)
+  - [Running from Python Source](#running-from-python-source)
 - [Usage](#usage)
   - [Command Line Options](#command-line-options)
   - [Examples](#examples)
+- [Project Structure](#project-structure)
 - [Configuration](#configuration)
-- [Technical Details](#technical-details)
-  - [Directory Structure](#directory-structure)
-  - [Database Schema](#database-schema)
+- [Database Documentation](#database-documentation)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 
@@ -33,6 +29,8 @@ FCC Tool is a command-line application that creates and maintains a complete loc
 The offline nature of this tool makes it particularly valuable for amateur radio operators in the field, emergency communications scenarios, or any situation where internet access may be limited or unavailable.
 
 > **Database Documentation**: For detailed information about the FCC database structure, tables, fields, and their meanings, see the [FCC Database Documentation](FCC_DATABASE_DOC.md).
+
+[↑ Back to Table of Contents](#table-of-contents-)
 
 ## Author and License
 
@@ -60,11 +58,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+[↑ Back to Table of Contents](#table-of-contents-)
+
 ## Features
 
 ### Database Management
 
-#### Downloading and Updating
+**[Features > Database Management]**
 
 FCC Tool can automatically download and update the FCC amateur radio license database from the [FCC's ULS database downloads page](https://www.fcc.gov/uls/transactions/daily-weekly). The tool checks for updates by comparing the last modified date of the remote file with your local copy, ensuring you only download new data when it's available.
 
@@ -72,18 +72,21 @@ Key features:
 
 - **Automatic update detection**: Checks if a new version is available before downloading
 - **Efficient data processing**: Downloads, extracts, and loads data into an SQLite database
+- **Optimized data loading**: Uses temporary tables and bulk operations for fast data loading
 - **Index creation**: Automatically creates optimized indexes for fast searching
 - **Cleanup**: Removes temporary files after processing to save disk space
 
-#### Maintenance and Optimization
-
-The tool provides several options for maintaining and optimizing the database:
+The tool also provides several options for maintaining and optimizing the database:
 
 - **Compaction**: Reclaims unused space in the database file
 - **Optimization**: Removes unused tables and columns to reduce database size
 - **Index rebuilding**: Rebuilds database indexes to improve search performance
 
+[↑ Back to Table of Contents](#table-of-contents-)
+
 ### Query Capabilities
+
+**[Features > Query Capabilities]**
 
 #### Call Sign Lookup
 
@@ -101,9 +104,13 @@ The tool allows you to search for records by state using the two-letter state co
 
 You can combine name and state filters to perform more targeted searches, such as finding all licensees with a specific name in a particular state.
 
+[↑ Back to Table of Contents](#table-of-contents-)
+
 ## Installation
 
-### Option 1: Using the Executable (Recommended)
+### Using the Executable (Recommended)
+
+**[Installation > Using the Executable]**
 
 FCC Tool is available as a standalone executable for Windows, Linux, and macOS. This is the easiest way to get started.
 
@@ -135,7 +142,11 @@ FCC Tool is available as a standalone executable for Windows, Linux, and macOS. 
 2. **Extract the ZIP file** to a location of your choice.
 3. **Run the application** by double-clicking the `fcc-tool` app in the extracted folder.
 
-### Option 2: Building from Source
+[↑ Back to Table of Contents](#table-of-contents-)
+
+### Building from Source
+
+**[Installation > Building from Source]**
 
 If you prefer to build the executable from source, follow these steps:
 
@@ -198,7 +209,11 @@ If you prefer to build the executable from source, follow these steps:
    open ./dist/fcc-tool-macos/fcc-tool/fcc-tool.app
    ```
 
-### Option 3: Running from Python Source
+[↑ Back to Table of Contents](#table-of-contents-)
+
+### Running from Python Source
+
+**[Installation > Running from Python Source]**
 
 You can also run the application directly from the Python source code:
 
@@ -218,32 +233,13 @@ You can also run the application directly from the Python source code:
    python fcc_tool.py
    ```
 
-## Project Structure
-
-The project is organized as follows:
-
-```
-fcc-tool/
-├── src/                  # Source code directory
-│   ├── fcc_tool.py       # Main application script
-│   ├── modules/          # Application modules
-│   └── tests/            # Test files
-├── dist/                 # Distribution directory (created during build)
-│   ├── fcc-tool-windows/ # Windows executable
-│   ├── fcc-tool-linux/   # Linux executable
-│   └── fcc-tool-macos/   # macOS executable
-├── resources/            # Application resources
-├── build_executable.py   # Script to build executables
-├── install.bat           # Windows installation script
-├── install.sh            # Linux installation script
-├── install_macos.sh      # macOS installation script
-├── README.md             # This documentation
-└── requirements.txt      # Python dependencies
-```
+[↑ Back to Table of Contents](#table-of-contents-)
 
 ## Usage
 
 ### Command Line Options
+
+**[Usage > Command Line Options]**
 
 FCC Tool provides a comprehensive set of command-line options for database management and querying:
 
@@ -270,7 +266,11 @@ FCC Tool provides a comprehensive set of command-line options for database manag
 | `--state STATE` | Filter records by two-letter state code (e.g., CA, NY, TX) |
 | `--verbose` | Display all fields for each record |
 
+[↑ Back to Table of Contents](#table-of-contents-)
+
 ### Examples
+
+**[Usage > Examples]**
 
 #### Database Management
 
@@ -326,7 +326,50 @@ Display detailed information for search results:
 python fcc_tool.py --name "Smith" --verbose
 ```
 
+[↑ Back to Table of Contents](#table-of-contents-)
+
+## Project Structure
+
+**[Project Structure]**
+
+The project is organized as follows:
+
+```
+fcc-tool/
+├── src/                  # Source code directory
+│   ├── fcc_tool.py       # Main application script
+│   ├── modules/          # Application modules
+│   └── tests/            # Test files
+├── dist/                 # Distribution directory (created during build)
+│   ├── fcc-tool-windows/ # Windows executable
+│   ├── fcc-tool-linux/   # Linux executable
+│   └── fcc-tool-macos/   # macOS executable
+├── resources/            # Application resources
+├── build_executable.py   # Script to build executables
+├── install.bat           # Windows installation script
+├── install.sh            # Linux installation script
+├── install_macos.sh      # macOS installation script
+├── README.md             # This documentation
+├── FCC_DATABASE_DOC.md   # Detailed database documentation
+└── requirements.txt      # Python dependencies
+```
+
+When running the application, additional directories are created:
+
+```
+fcc-tool/
+├── data/                 # Data directory (created automatically)
+│   ├── fcc_data.db       # SQLite database
+│   └── fcc_metadata.json # Metadata about the last download
+└── logs/                 # Log directory (created automatically)
+    └── fcc_tool.log      # Application log file
+```
+
+[↑ Back to Table of Contents](#table-of-contents-)
+
 ## Configuration
+
+**[Configuration]**
 
 The database path and other configuration settings are defined in the `modules/config.py` file. You can modify these settings to customize the tool's behavior:
 
@@ -335,37 +378,11 @@ The database path and other configuration settings are defined in the `modules/c
 - `ZIP_FILE_URL`: URL for downloading the FCC database
 - `TABLES_TO_PROCESS`: List of tables to process during data loading
 
-## Technical Details
+[↑ Back to Table of Contents](#table-of-contents-)
 
-### Directory Structure
+## Database Documentation
 
-The application is organized into the following structure:
-
-```
-fcc-tool/
-├── fcc_tool.py           # Main application script
-├── README.md             # This documentation
-├── requirements.txt      # Python dependencies
-├── FCC_DATABASE_DOC.md   # Detailed database documentation
-├── data/                 # Data directory (created automatically)
-│   ├── fcc_data.db       # SQLite database
-│   └── fcc_metadata.json # Metadata about the last download
-├── logs/                 # Log directory (created automatically)
-│   └── fcc_tool.log      # Application log file
-└── modules/              # Application modules
-    ├── config.py         # Configuration settings
-    ├── database.py       # Database operations
-    ├── downloader.py     # File downloading
-    ├── extractor.py      # File extraction
-    ├── fcc_code_defs.py  # FCC code definitions
-    ├── filesystemtools.py # File system operations
-    ├── loader.py         # Data loading
-    ├── logger.py         # Logging configuration
-    ├── schemas.py        # Database schemas
-    └── updater.py        # Update process management
-```
-
-### Database Schema
+**[Database Documentation]**
 
 The FCC database contains multiple tables with information about amateur radio licenses. The primary tables used by FCC Tool are:
 
@@ -378,13 +395,15 @@ The FCC database contains multiple tables with information about amateur radio l
 - `SC`: Special conditions
 - `SF`: Special free form conditions
 
-For detailed information about the FCC database structure, tables, fields, and their meanings, please refer to the [FCC Database Documentation](FCC_DATABASE_DOC.md) included in this repository.
-
 The FCC data is sourced from the [FCC's ULS database downloads page](https://www.fcc.gov/uls/transactions/daily-weekly), specifically the Amateur Radio Service database file (`l_amat.zip`).
 
 **[📄 View Complete FCC Database Documentation](FCC_DATABASE_DOC.md)**
 
+[↑ Back to Table of Contents](#table-of-contents-)
+
 ## Troubleshooting
+
+**[Troubleshooting]**
 
 ### Common Issues
 
@@ -397,7 +416,11 @@ The FCC data is sourced from the [FCC's ULS database downloads page](https://www
 
 The application logs are stored in the `logs/fcc_tool.log` file. If you encounter issues, check this file for detailed error messages and debugging information.
 
+[↑ Back to Table of Contents](#table-of-contents-)
+
 ## Contributing
+
+**[Contributing]**
 
 Contributions are welcome! Please feel free to submit a Pull Request or open an Issue on GitHub.
 
@@ -406,3 +429,5 @@ Contributions are welcome! Please feel free to submit a Pull Request or open an 
 3. Commit your changes: `git commit -am 'Add some feature'`
 4. Push to the branch: `git push origin feature-name`
 5. Submit a pull request
+
+[↑ Back to Table of Contents](#table-of-contents-)
