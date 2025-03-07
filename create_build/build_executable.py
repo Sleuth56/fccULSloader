@@ -168,6 +168,20 @@ def build_executable(target_platform=None, quiet=False):
                 subprocess.check_call(cmd, stdout=devnull, stderr=devnull)
         else:
             subprocess.check_call(cmd)
+        
+        # Clean up build directory and spec files after successful build
+        if os.path.exists(BUILD_DIR):
+            if not quiet:
+                print(f"Cleaning up {BUILD_DIR} directory...")
+            shutil.rmtree(BUILD_DIR)
+        
+        # Remove spec files
+        for spec_file in os.listdir('.'):
+            if spec_file.endswith('.spec'):
+                if not quiet:
+                    print(f"Removing {spec_file}...")
+                os.remove(spec_file)
+        
         return True
     except subprocess.CalledProcessError as e:
         if not quiet:

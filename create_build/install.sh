@@ -27,10 +27,15 @@ if [ $? -ne 0 ]; then
 fi
 
 # Clean up silently
+echo "Cleaning up build artifacts..."
 rm -rf build/ *.spec &> /dev/null
 find . -name "__pycache__" -type d -exec rm -rf {} + &> /dev/null
 find . -name "*.pyc" -delete &> /dev/null
 rm -f fcc-tool-*.pkg fcc-tool-*.manifest warn-fcc-tool-*.txt &> /dev/null
+
+# Double-check that build folder is gone (sometimes it's recreated)
+sleep 1
+rm -rf build/ &> /dev/null
 
 echo "Build completed successfully."
 echo "Executable: dist/fcc-tool-linux/fcc-tool" 

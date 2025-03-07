@@ -32,7 +32,8 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-REM Clean up silently
+REM Clean up silently - ensure build folder is removed
+echo Cleaning up build artifacts...
 if exist build rmdir /s /q build > nul 2>&1
 if exist *.spec del /f /q *.spec > nul 2>&1
 if exist __pycache__ rmdir /s /q __pycache__ > nul 2>&1
@@ -40,6 +41,10 @@ for /d /r . %%d in (__pycache__) do @if exist "%%d" rmdir /s /q "%%d" > nul 2>&1
 if exist "fcc-tool-*.pkg" del /f /q "fcc-tool-*.pkg" > nul 2>&1
 if exist "fcc-tool-*.exe.manifest" del /f /q "fcc-tool-*.exe.manifest" > nul 2>&1
 if exist "warn-fcc-tool-*.txt" del /f /q "warn-fcc-tool-*.txt" > nul 2>&1
+
+REM Double-check that build folder is gone (sometimes it's recreated)
+timeout /t 1 /nobreak > nul
+if exist build rmdir /s /q build > nul 2>&1
 
 echo Build completed successfully.
 echo Executable: dist\fcc-tool-windows\fcc-tool.exe
