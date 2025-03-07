@@ -10,9 +10,6 @@ A comprehensive utility for managing and querying FCC amateur radio license data
   - [Database Management](#database-management)
   - [Query Capabilities](#query-capabilities)
 - [Installation](#installation)
-  - [Using the Executable](#using-the-executable-recommended)
-  - [Building from Source](#building-from-source)
-  - [Running from Python Source](#running-from-python-source)
 - [Usage](#usage)
   - [Command Line Options](#command-line-options)
   - [Examples](#examples)
@@ -108,133 +105,23 @@ You can combine name and state filters to perform more targeted searches, such a
 
 ## Installation
 
-### Using the Executable (Recommended)
+FCC Tool can be run directly from Python source or as a standalone executable. For detailed instructions on building and running the application, see the [Build Documentation](create_build/README.md).
 
-**[[Installation](#installation) > Using the Executable]**
+### Quick Start
 
-FCC Tool is available as a standalone executable for Windows, Linux, and macOS. This is the easiest way to get started.
+#### Running from Python Source
 
-#### Windows
+```
+# Install dependencies
+pip install -r requirements.txt
 
-1. **Download the latest release** from the [Releases page](https://github.com/tirandagan/fccULSloader/releases).
-2. **Extract the ZIP file** to a location of your choice.
-3. **Run the executable** (`fcc-tool.exe`) from the extracted folder.
+# Run the application
+python fcc_tool.py --help
+```
 
-#### Linux
+#### Using Pre-built Executables
 
-1. **Download the latest release** from the [Releases page](https://github.com/tirandagan/fccULSloader/releases).
-2. **Extract the tarball**:
-   ```
-   tar -xzf fcc-tool-linux.tar.gz
-   ```
-3. **Make the executable file executable**:
-   ```
-   chmod +x fcc-tool
-   ```
-4. **Run the executable**:
-   ```
-   ./fcc-tool
-   ```
-
-#### macOS
-
-1. **Download the latest release** from the [Releases page](https://github.com/tirandagan/fccULSloader/releases).
-2. **Extract the ZIP file** to a location of your choice.
-3. **Run the application**:
-   ```
-   ./fcc-tool
-   ```
-
-[↑ Back to Table of Contents](#table-of-contents-)
-
-### Building from Source
-
-**[[Installation](#installation) > Building from Source]**
-
-If you prefer to build the executable from source, follow these steps:
-
-#### Prerequisites
-
-- Python 3.7 or higher
-- pip (Python package manager)
-
-#### Windows
-
-1. **Clone the repository**:
-   ```
-   git clone https://github.com/tirandagan/fccULSloader.git
-   cd fccULSloader
-   ```
-
-2. **Run the installer script**:
-   ```
-   install.bat
-   ```
-
-3. **Run the executable**:
-   ```
-   dist\fcc-tool-windows\fcc-tool.exe
-   ```
-
-#### Linux
-
-1. **Clone the repository**:
-   ```
-   git clone https://github.com/tirandagan/fccULSloader.git
-   cd fccULSloader
-   ```
-
-2. **Run the installer script**:
-   ```
-   ./install.sh
-   ```
-
-3. **Run the executable**:
-   ```
-   ./dist/fcc-tool-linux/fcc-tool
-   ```
-
-#### macOS
-
-1. **Clone the repository**:
-   ```
-   git clone https://github.com/tirandagan/fccULSloader.git
-   cd fccULSloader
-   ```
-
-2. **Run the installer script**:
-   ```
-   ./install_macos.sh
-   ```
-
-3. **Run the executable**:
-   ```
-   ./dist/fcc-tool-macos/fcc-tool
-   ```
-
-[↑ Back to Table of Contents](#table-of-contents-)
-
-### Running from Python Source
-
-**[[Installation](#installation) > Running from Python Source]**
-
-You can also run the application directly from the Python source code:
-
-1. **Clone the repository**:
-   ```
-   git clone https://github.com/tirandagan/fccULSloader.git
-   cd fccULSloader
-   ```
-
-2. **Install dependencies**:
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. **Run the application**:
-   ```
-   python fcc_tool.py
-   ```
+Download the latest release from the [Releases page](https://github.com/tirandagan/fccULSloader/releases) for your platform (Windows, Linux, or macOS).
 
 [↑ Back to Table of Contents](#table-of-contents-)
 
@@ -371,30 +258,6 @@ fcc-tool/
 └── logs/                 # Log directory (created automatically)
     └── fcc_tool.log      # Application log file
 ```
-
-### Building Executables
-
-To build standalone executables of the application, use the scripts in the `create_build` directory:
-
-#### Windows
-
-```
-create_build\install.bat
-```
-
-#### Linux
-
-```
-./create_build/install.sh
-```
-
-#### macOS
-
-```
-./create_build/install_macos.sh
-```
-
-For more detailed information about the build process, see [create_build/README.md](create_build/README.md).
 
 [↑ Back to Table of Contents](#table-of-contents-)
 
