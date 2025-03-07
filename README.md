@@ -129,18 +129,21 @@ FCC Tool is available as a standalone executable for Windows, Linux, and macOS. 
    ```
 3. **Make the executable file executable**:
    ```
-   chmod +x fcc-tool-linux/fcc-tool/fcc-tool
+   chmod +x fcc-tool
    ```
 4. **Run the executable**:
    ```
-   ./fcc-tool-linux/fcc-tool/fcc-tool
+   ./fcc-tool
    ```
 
 #### macOS
 
 1. **Download the latest release** from the [Releases page](https://github.com/tirandagan/fccULSloader/releases).
 2. **Extract the ZIP file** to a location of your choice.
-3. **Run the application** by double-clicking the `fcc-tool` app in the extracted folder.
+3. **Run the application**:
+   ```
+   ./fcc-tool
+   ```
 
 [↑ Back to Table of Contents](#table-of-contents-)
 
@@ -170,7 +173,7 @@ If you prefer to build the executable from source, follow these steps:
 
 3. **Run the executable**:
    ```
-   dist\fcc-tool-windows\fcc-tool\fcc-tool.exe
+   dist\fcc-tool-windows\fcc-tool.exe
    ```
 
 #### Linux
@@ -188,7 +191,7 @@ If you prefer to build the executable from source, follow these steps:
 
 3. **Run the executable**:
    ```
-   ./dist/fcc-tool-linux/fcc-tool/fcc-tool
+   ./dist/fcc-tool-linux/fcc-tool
    ```
 
 #### macOS
@@ -206,7 +209,7 @@ If you prefer to build the executable from source, follow these steps:
 
 3. **Run the executable**:
    ```
-   open ./dist/fcc-tool-macos/fcc-tool/fcc-tool.app
+   ./dist/fcc-tool-macos/fcc-tool
    ```
 
 [↑ Back to Table of Contents](#table-of-contents-)
@@ -340,17 +343,21 @@ fcc-tool/
 │   ├── fcc_tool.py       # Main application script
 │   ├── modules/          # Application modules
 │   └── tests/            # Test files
+├── create_build/         # Build scripts and tools
+│   ├── build_executable.py  # Main build script
+│   ├── simple_build.py   # Simplified build script
+│   ├── install.bat       # Windows installation script
+│   ├── install.sh        # Linux installation script
+│   └── install_macos.sh  # macOS installation script
 ├── dist/                 # Distribution directory (created during build)
 │   ├── fcc-tool-windows/ # Windows executable
 │   ├── fcc-tool-linux/   # Linux executable
 │   └── fcc-tool-macos/   # macOS executable
 ├── resources/            # Application resources
-├── build_executable.py   # Script to build executables
-├── install.bat           # Windows installation script
-├── install.sh            # Linux installation script
-├── install_macos.sh      # macOS installation script
 ├── README.md             # This documentation
 ├── FCC_DATABASE_DOC.md   # Detailed database documentation
+├── run.bat               # Windows run script
+├── run.sh                # Linux/macOS run script
 └── requirements.txt      # Python dependencies
 ```
 
@@ -364,6 +371,30 @@ fcc-tool/
 └── logs/                 # Log directory (created automatically)
     └── fcc_tool.log      # Application log file
 ```
+
+### Building Executables
+
+To build standalone executables of the application, use the scripts in the `create_build` directory:
+
+#### Windows
+
+```
+create_build\install.bat
+```
+
+#### Linux
+
+```
+./create_build/install.sh
+```
+
+#### macOS
+
+```
+./create_build/install_macos.sh
+```
+
+For more detailed information about the build process, see [create_build/README.md](create_build/README.md).
 
 [↑ Back to Table of Contents](#table-of-contents-)
 
