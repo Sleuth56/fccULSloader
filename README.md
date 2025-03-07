@@ -64,7 +64,7 @@ SOFTWARE.
 
 ### Database Management
 
-**[Features > Database Management]**
+**[[Features](#features) > Database Management]**
 
 FCC Tool can automatically download and update the FCC amateur radio license database from the [FCC's ULS database downloads page](https://www.fcc.gov/uls/transactions/daily-weekly). The tool checks for updates by comparing the last modified date of the remote file with your local copy, ensuring you only download new data when it's available.
 
@@ -86,7 +86,7 @@ The tool also provides several options for maintaining and optimizing the databa
 
 ### Query Capabilities
 
-**[Features > Query Capabilities]**
+**[[Features](#features) > Query Capabilities]**
 
 #### Call Sign Lookup
 
@@ -110,7 +110,7 @@ You can combine name and state filters to perform more targeted searches, such a
 
 ### Using the Executable (Recommended)
 
-**[Installation > Using the Executable]**
+**[[Installation](#installation) > Using the Executable]**
 
 FCC Tool is available as a standalone executable for Windows, Linux, and macOS. This is the easiest way to get started.
 
@@ -149,7 +149,7 @@ FCC Tool is available as a standalone executable for Windows, Linux, and macOS. 
 
 ### Building from Source
 
-**[Installation > Building from Source]**
+**[[Installation](#installation) > Building from Source]**
 
 If you prefer to build the executable from source, follow these steps:
 
@@ -216,7 +216,7 @@ If you prefer to build the executable from source, follow these steps:
 
 ### Running from Python Source
 
-**[Installation > Running from Python Source]**
+**[[Installation](#installation) > Running from Python Source]**
 
 You can also run the application directly from the Python source code:
 
@@ -242,7 +242,7 @@ You can also run the application directly from the Python source code:
 
 ### Command Line Options
 
-**[Usage > Command Line Options]**
+**[[Usage](#usage) > Command Line Options]**
 
 FCC Tool provides a comprehensive set of command-line options for database management and querying:
 
@@ -273,7 +273,7 @@ FCC Tool provides a comprehensive set of command-line options for database manag
 
 ### Examples
 
-**[Usage > Examples]**
+**[[Usage](#usage) > Examples]**
 
 #### Database Management
 
