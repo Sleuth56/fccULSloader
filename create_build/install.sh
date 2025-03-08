@@ -17,10 +17,73 @@ if [ $? -ne 0 ]; then
 fi
 
 # Clean build artifacts but preserve dist folder
+# Only remove build directory and spec files, NOT the dist folder
 rm -rf build/ *.spec &> /dev/null
 
+# Create dist directory if it doesn't exist
+mkdir -p dist/fcc-tool-linux
+
+# Get version from build_executable.py directly
+# Use a more reliable way to capture the version
+VERSION=$(python3 -c "import sys; sys.path.insert(0, 'src'); from fcc_tool import __version__; print(__version__)")
+echo "Detected version: ${VERSION}"
+
+# Create a spec file with increased recursion limit to avoid recursion errors
+echo "Creating PyInstaller spec file with increased recursion limit..."
+cat > "fcc-tool-${VERSION}.spec" << 'EOF'
+# -*- mode: python ; coding: utf-8 -*-
+import sys
+sys.setrecursionlimit(sys.getrecursionlimit() * 10)  # Increase recursion limit
+
+block_cipher = None
+
+a = Analysis(
+    ['src/fcc_tool.py'],
+    pathex=[],
+    binaries=[],
+    datas=[('src/modules', 'modules'), ('LICENSE', '.'), ('README.md', '.'), ('FCC_DATABASE_DOC.md', '.')],
+    hiddenimports=['modules.config', 'modules.database', 'modules.updater', 'modules.logger', 'modules.filesystemtools', 'modules.fcc_code_defs'],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
+    noarchive=False,
+)
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    [],
+    name='fcc-tool-VERSION',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=True,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)
+EOF
+
+# Replace VERSION placeholder with actual version in the spec file
+sed -i "s/fcc-tool-VERSION/fcc-tool-${VERSION}/g" "fcc-tool-${VERSION}.spec"
+
 echo "Building executable..."
-python3 create_build/build_executable.py --platform linux --quiet &> /dev/null
+# Run PyInstaller directly with the spec file
+pyinstaller --clean --noconfirm --distpath=dist/fcc-tool-linux "fcc-tool-${VERSION}.spec"
 if [ $? -ne 0 ]; then
     echo "Error: Failed to build executable."
     exit 1
@@ -29,16 +92,13 @@ fi
 # Clean up silently but preserve dist folder
 echo "Cleaning up build artifacts..."
 rm -rf build/ *.spec &> /dev/null
-find . -name "__pycache__" -type d -exec rm -rf {} + &> /dev/null
-find . -name "*.pyc" -delete &> /dev/null
+find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+find . -name "*.pyc" -delete 2>/dev/null || true
 rm -f fcc-tool-*.pkg fcc-tool-*.manifest warn-fcc-tool-*.txt &> /dev/null
 
 # Double-check that build folder is gone (sometimes it's recreated)
 sleep 1
 rm -rf build/ &> /dev/null
-
-# Get version from build_executable.py directly
-VERSION=$(python3 create_build/build_executable.py --get-version)
 
 echo "Build completed successfully."
 echo "Executable: dist/fcc-tool-linux/fcc-tool-${VERSION}" 

@@ -19,23 +19,64 @@ The easiest way to build the executable is to use the installation scripts:
 
 #### Windows
 
+Open Command Prompt or PowerShell and run:
+
 ```
 cd <project_root>
 create_build\install.bat
 ```
 
+Alternatively, you can double-click the `install.bat` file in Windows Explorer.
+
 #### Linux
+
+Open a terminal and run:
 
 ```
 cd <project_root>
+chmod +x ./create_build/install.sh  # Make the script executable (first time only)
 ./create_build/install.sh
 ```
 
-#### macOS
+#### Windows Subsystem for Linux (WSL)
+
+If you're using WSL, navigate to the project directory and run:
 
 ```
 cd <project_root>
+bash ./create_build/install.sh
+```
+
+Note: When building on WSL, you may need to increase the recursion limit if you encounter recursion errors. The updated script now handles this automatically.
+
+#### macOS
+
+Open Terminal and run:
+
+```
+cd <project_root>
+chmod +x ./create_build/install_macos.sh  # Make the script executable (first time only)
 ./create_build/install_macos.sh
+```
+
+### Troubleshooting Build Issues
+
+#### Recursion Errors
+If you encounter recursion errors during the build process, the updated scripts now automatically increase Python's recursion limit to handle complex dependency trees.
+
+#### Missing Dependencies
+Make sure all required packages are installed:
+
+```
+pip install -r requirements.txt pyinstaller
+```
+
+#### Permission Issues
+If you encounter permission issues when running the scripts, make sure they are executable:
+
+```
+chmod +x ./create_build/install.sh
+chmod +x ./create_build/install_macos.sh
 ```
 
 ### Using the Build Scripts Directly
@@ -73,4 +114,24 @@ The executables will be created in the following directories:
 - Linux: `dist/fcc-tool-linux/fcc-tool-<version>`
 - macOS: `dist/fcc-tool-macos/fcc-tool-<version>`
 
-Where `<version>` is the version number defined in `src/fcc_tool.py`. 
+Where `<version>` is the version number defined in `src/fcc_tool.py`.
+
+## Running the Built Executables
+
+### Windows
+Double-click the executable file or run from Command Prompt:
+```
+dist\fcc-tool-windows\fcc-tool-<version>.exe
+```
+
+### Linux
+Run from terminal:
+```
+./dist/fcc-tool-linux/fcc-tool-<version>
+```
+
+### macOS
+Run from terminal:
+```
+./dist/fcc-tool-macos/fcc-tool-<version>
+``` 
