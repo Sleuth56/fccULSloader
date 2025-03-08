@@ -81,7 +81,7 @@ def install_requirements():
     """Install required packages for building"""
     print("Installing required packages...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "src/requirements.txt"])
 
 def get_platform_config(platform):
     if platform not in PLATFORMS:

@@ -12,7 +12,7 @@ if %ERRORLEVEL% neq 0 (
 
 REM Install required packages quietly
 echo Installing dependencies...
-pip install -q -r requirements.txt pyinstaller
+pip install -q -r src/requirements.txt pyinstaller
 if %ERRORLEVEL% neq 0 (
     echo Error: Failed to install dependencies.
     pause

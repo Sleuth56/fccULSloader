@@ -25,11 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling and user feedback during database operations
 - Enhanced documentation with detailed examples for the new features
 - Cleaned up console output during index creation and removal for a more professional appearance
+- Moved requirements.txt to the src folder for better project organization
 
 ### Fixed
 - Various minor bug fixes and performance improvements
 - Fixed argument processing issue when using `--active-only` with `--force-download`
 - Fixed issue where using `--force-download` without `--update` didn't trigger any action
+- Fixed Linux executable naming to follow the format "fcc-tool-linux-[version]"
 
 ## [1.6.0] - 2025-02-15
 

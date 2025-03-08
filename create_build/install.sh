@@ -10,7 +10,7 @@ fi
 
 # Install required packages quietly
 echo "Installing dependencies..."
-pip3 install -q -r requirements.txt pyinstaller
+pip3 install -q -r src/requirements.txt pyinstaller
 if [ $? -ne 0 ]; then
     echo "Error: Failed to install dependencies."
     exit 1
@@ -62,7 +62,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='fcc-tool-VERSION',
+    name='fcc-tool-linux-VERSION',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -79,7 +79,7 @@ exe = EXE(
 EOF
 
 # Replace VERSION placeholder with actual version in the spec file
-sed -i "s/fcc-tool-VERSION/fcc-tool-${VERSION}/g" "fcc-tool-${VERSION}.spec"
+sed -i "s/fcc-tool-linux-VERSION/fcc-tool-linux-${VERSION}/g" "fcc-tool-${VERSION}.spec"
 
 echo "Building executable..."
 # Run PyInstaller directly with the spec file
@@ -101,4 +101,4 @@ sleep 1
 rm -rf build/ &> /dev/null
 
 echo "Build completed successfully."
-echo "Executable: dist/fcc-tool-linux/fcc-tool-${VERSION}" 
+echo "Executable: dist/fcc-tool-linux/fcc-tool-linux-${VERSION}" 
