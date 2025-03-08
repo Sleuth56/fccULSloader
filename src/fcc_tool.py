@@ -72,6 +72,7 @@ Database Management:
   --compact               : Compact the database to reduce file size
   --optimize              : Remove unused tables and compact the database
   --rebuild-indexes       : Rebuild database indexes to improve search performance
+  --active-only           : Only keep active license records (license_status="A") in the database
 
 Queries:
   --callsign CALLSIGN     : Look up a specific amateur radio call sign
@@ -101,7 +102,7 @@ from modules.database import FCCDatabase
 from modules.filesystemtools import ensure_directory
 
 # Version information
-__version__ = "1.6.0"
+__version__ = "1.7.0"
 APP_NAME = "FCC Tool"
 
 # Utility functions
@@ -210,6 +211,8 @@ def main():
                          help='Remove unused tables and compact the database')
     db_group.add_argument('--rebuild-indexes', action='store_true', 
                          help='Rebuild database indexes to improve search performance')
+    db_group.add_argument('--active-only', action='store_true',
+                         help='Only keep active license records (license_status="A") in the database')
     
     # Query options
     query_group.add_argument('--callsign', metavar='CALLSIGN', 
@@ -223,6 +226,10 @@ def main():
     
     # Parse arguments
     args = parser.parse_args()
+    
+    # Handle the renamed parameter (active-only instead of active_only)
+    # This is needed because argparse converts - to _ in attribute names
+    args.active_only = args.active_only if hasattr(args, 'active_only') else False
     
     # Get database path from config
     db_path = config.Config.DB_PATH
@@ -258,16 +265,70 @@ def main():
         print(f"Database exists: {db.database_exists()}")
         print(f"Force download: {args.force_download}")
         
+        # If active-only is specified, warn the user and ask for confirmation
+        if args.active_only:
+            print("\nWARNING: You have specified the --active-only flag with --update.")
+            print("This will filter out all inactive license records during the update process.")
+            print("Only records with license_status='A' (Active) will be included in the database.")
+            
+            # If force-download is also specified, mention that we'll be reloading the tables
+            if args.force_download:
+                print("\nSince --force-download is also specified, the database will be completely rebuilt")
+                print("with only active records. No additional filtering of existing data is needed.")
+            
+            confirmation = input("\nAre you sure you want to continue? (yes/no): ").strip().lower()
+            if confirmation != "yes":
+                print("Operation cancelled.")
+                return
+        
         try:
             updater.update_data(
                 skip_download=args.skip_download,
                 keep_files=args.keep_files,
                 force_download=args.force_download,
-                quiet=args.quiet
+                quiet=args.quiet,
+                active_only=args.active_only
             )
         except Exception as e:
             logging.error(f"Error during update process: {e}")
             print(f"Error: {e}")
+        return
+    
+    # Handle force-download without update (treat it as an update with force-download)
+    if args.force_download and not args.update:
+        print("Forcing download of the latest FCC database...")
+        
+        # If active-only is also specified, warn the user and ask for confirmation
+        if args.active_only:
+            print("\nWARNING: You have specified the --active-only flag with --force-download.")
+            print("This will completely rebuild the database with only active license records.")
+            print("Only records with license_status='A' (Active) will be included in the database.")
+            
+            confirmation = input("\nAre you sure you want to continue? (yes/no): ").strip().lower()
+            if confirmation != "yes":
+                print("Operation cancelled.")
+                return
+        
+        try:
+            updater.update_data(
+                skip_download=False,
+                keep_files=args.keep_files,
+                force_download=True,
+                quiet=args.quiet,
+                active_only=args.active_only
+            )
+        except Exception as e:
+            logging.error(f"Error during update process: {e}")
+            print(f"Error: {e}")
+        return
+    
+    # Handle active-only without update
+    if args.active_only and not args.update and not args.force_download:
+        print("Filtering database to keep only active license records...")
+        if not db.database_exists():
+            print("Error: Database does not exist. Please run with --update first.")
+            return
+        db.remove_inactive_records()
         return
     
     # Rebuild indexes
@@ -364,7 +425,8 @@ def main():
     
     # If we get here, no valid options were provided
     if not any([args.callsign, args.name, args.state, args.update, args.check_update, 
-                args.compact, args.optimize, args.rebuild_indexes]):
+                args.compact, args.optimize, args.rebuild_indexes, args.active_only,
+                args.force_download, args.skip_download, args.keep_files]):
         parser.print_help()
         print("\nError: No valid options provided. Please specify at least one option.")
         return

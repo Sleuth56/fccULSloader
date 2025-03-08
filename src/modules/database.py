@@ -159,10 +159,20 @@ class FCCDatabase:
                 conn.close()
 
     def disable_indexes(self, tables_to_process):
+        """
+        Disable indexes for the specified tables to improve data loading performance.
+        
+        Args:
+            tables_to_process: List of tables to disable indexes for
+        """
         conn = self.create_connection()
         if conn:
             try:
                 c = conn.cursor()
+                # Count total indexes to drop
+                total_indexes = sum(len(index_schemas[table]) for table in tables_to_process)
+                logging.info(f"Disabling {total_indexes} indexes for {len(tables_to_process)} tables to improve loading performance...")
+                
                 for table in tables_to_process:
                     for index_sql in index_schemas[table]:
                         match = re.search(r'CREATE INDEX IF NOT EXISTS (.*?) ON', index_sql)
@@ -170,23 +180,34 @@ class FCCDatabase:
                             index_name = match.group(1)
                             c.execute(f"DROP INDEX IF EXISTS {index_name};")
                 conn.commit()
+                logging.info("All indexes disabled successfully.")
             except sqlite3.Error as e:
-                print(f"Error disabling indexes: {e}")
+                logging.error(f"Error disabling indexes: {e}")
             finally:
                 conn.close()
 
     def enable_indexes(self, tables_to_process):
+        """
+        Enable indexes for the specified tables.
+        
+        Args:
+            tables_to_process: List of tables to enable indexes for
+        """
         conn = self.create_connection()
         if conn:
             try:
                 c = conn.cursor()
+                # Count total indexes to create
+                total_indexes = sum(len(index_schemas[table]) for table in tables_to_process)
+                logging.info(f"Creating {total_indexes} indexes for {len(tables_to_process)} tables...")
+                
                 for table in tables_to_process:
                     for index_sql in index_schemas[table]:
-                        print(f"enabling index for {table}")
                         c.execute(index_sql)
                 conn.commit()
+                logging.info("All indexes created successfully.")
             except sqlite3.Error as e:
-                print(f"Error enabling indexes: {e}")
+                logging.error(f"Error enabling indexes: {e}")
             finally:
                 conn.close()
 
@@ -614,9 +635,112 @@ class FCCDatabase:
         Check if the database file exists.
         
         Returns:
-            bool: True if the database file exists, False otherwise.
+            bool: True if the database file exists, False otherwise
         """
         return file_exists(self.db_path)
+    
+    def remove_inactive_records(self):
+        """
+        Remove all inactive license records from the database.
+        
+        This removes records from the HD table where license_status is not 'A',
+        and also removes related records from other tables.
+        
+        The user is prompted to confirm before records are deleted.
+        """
+        conn = self.create_connection()
+        if conn:
+            try:
+                cursor = conn.cursor()
+                
+                # First, identify all inactive records in the HD table
+                logging.info("Identifying inactive records...")
+                cursor.execute("CREATE TEMPORARY TABLE temp_inactive_records AS SELECT unique_system_identifier, call_sign FROM HD WHERE license_status != 'A'")
+                
+                # Get count of inactive records
+                cursor.execute("SELECT COUNT(*) FROM temp_inactive_records")
+                inactive_count = cursor.fetchone()[0]
+                
+                if inactive_count == 0:
+                    logging.info("No inactive records found in the database")
+                    print("No inactive records found in the database. Nothing to delete.")
+                    cursor.execute("DROP TABLE temp_inactive_records")
+                    return
+                
+                # Get a sample of call signs to show the user
+                cursor.execute("SELECT call_sign FROM temp_inactive_records LIMIT 10")
+                sample_calls = [row[0] for row in cursor.fetchall() if row[0]]
+                sample_text = ", ".join(sample_calls) if sample_calls else "N/A"
+                
+                # Ask for confirmation
+                print(f"\nWARNING: This will delete {inactive_count} inactive license records from the database.")
+                print(f"Sample of call signs to be deleted: {sample_text}")
+                print("\nThis action cannot be undone. Related records in other tables will also be deleted.")
+                
+                confirmation = input("\nAre you sure you want to continue? (yes/no): ").strip().lower()
+                
+                if confirmation != "yes":
+                    print("Operation cancelled. No records were deleted.")
+                    cursor.execute("DROP TABLE temp_inactive_records")
+                    return
+                
+                # Start a transaction
+                conn.execute("BEGIN TRANSACTION")
+                
+                # Delete related records from other tables
+                for table in ["AM", "CO", "EN", "HS", "LA", "SC", "SF"]:
+                    try:
+                        # Check if the table exists
+                        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}'")
+                        if cursor.fetchone():
+                            logging.info(f"Removing inactive records from {table} table...")
+                            cursor.execute(f"""
+                                DELETE FROM {table} 
+                                WHERE unique_system_identifier IN (
+                                    SELECT unique_system_identifier FROM temp_inactive_records
+                                )
+                            """)
+                            deleted = cursor.rowcount
+                            logging.info(f"Removed {deleted} records from {table} table")
+                            print(f"Removed {deleted} records from {table} table")
+                    except sqlite3.Error as e:
+                        logging.error(f"Error removing inactive records from {table}: {e}")
+                
+                # Delete inactive records from HD table
+                logging.info("Removing inactive records from HD table...")
+                cursor.execute("""
+                    DELETE FROM HD 
+                    WHERE unique_system_identifier IN (
+                        SELECT unique_system_identifier FROM temp_inactive_records
+                    )
+                """)
+                deleted = cursor.rowcount
+                logging.info(f"Removed {deleted} records from HD table")
+                print(f"Removed {deleted} records from HD table")
+                
+                # Drop the temporary table
+                cursor.execute("DROP TABLE temp_inactive_records")
+                
+                # Commit the transaction
+                conn.commit()
+                
+                # Vacuum the database to reclaim space
+                logging.info("Vacuuming database to reclaim space...")
+                print("Vacuuming database to reclaim space...")
+                conn.execute("VACUUM")
+                
+                logging.info("Inactive records removal completed")
+                print("\nInactive records have been successfully removed from the database.")
+                
+            except sqlite3.Error as e:
+                logging.error(f"Database error during inactive records removal: {e}")
+                conn.rollback()
+                print(f"Error: {e}")
+            finally:
+                conn.close()
+        else:
+            logging.error("Could not connect to the database")
+            print("Error: Could not connect to the database")
 
     @staticmethod
     def display_record(record):

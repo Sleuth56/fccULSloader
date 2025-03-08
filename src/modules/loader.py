@@ -91,211 +91,118 @@ def unregister_connection(conn):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-def parse_file(file_path, expected_fields, table):
+def parse_file(file_path, expected_fields, table, active_only=False, active_records=None):
     """
     Parse a data file efficiently using block reading and in-memory processing.
     
     This optimized version:
     1. Reads large blocks of data at once (10MB chunks)
     2. Processes records in memory
-    3. Handles multiline records properly
-    4. Only converts date fields when necessary
+    3. Optionally filters records based on license status if active_only is True
+    
+    Args:
+        file_path: Path to the data file
+        expected_fields: Expected number of fields in each record
+        table: Table name
+        active_only: Whether to only include active license records
+                    (corresponds to --active-only command-line parameter)
+        active_records: Set of unique_system_identifier values for active records (used for related tables)
+    
+    Returns:
+        Generator yielding processed records
     """
-    # Identify date fields for conversion
-    date_indices = [i for i, col in enumerate(field_names.get(table, [])) 
-                    if col and 'date' in col.lower()]
+    # If we're filtering for active records in a related table, we need the set of active record IDs
+    if active_only and table != "HD" and active_records is None:
+        logging.warning(f"Active_only is True for table {table} but no active_records set provided")
     
-    # Tables known to have multiline text fields
-    multiline_tables = ["HD", "EN", "HS", "CO"]
-    is_multiline_table = table in multiline_tables
-    
-    # Block size for reading (10MB at a time)
-    BLOCK_SIZE = 10 * 1024 * 1024  # 10MB
-    
-    # Try memory mapping for large files (faster access)
-    try:
-        file_size = os.path.getsize(file_path)
-        
-        # For very large files, use memory mapping
-        if file_size > 50 * 1024 * 1024:  # 50MB
-            with open(file_path, 'r', encoding='utf-8', errors='replace') as file:
-                with mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as mmapped_file:
-                    # Process the memory-mapped file in chunks
-                    position = 0
-                    leftover = b''
-                    
-                    while position < mmapped_file.size():
-                        # Read a chunk
-                        chunk = mmapped_file.read(BLOCK_SIZE)
-                        position = mmapped_file.tell()
-                        
-                        # Handle chunk boundaries
-                        if position < mmapped_file.size():
-                            # Find the last newline in this chunk
-                            last_newline = chunk.rfind(b'\n')
-                            if last_newline != -1:
-                                # Process up to the last complete line
-                                process_chunk = leftover + chunk[:last_newline+1]
-                                leftover = chunk[last_newline+1:]
-                            else:
-                                # No newline found, add to leftover
-                                leftover += chunk
-                                continue
-                        else:
-                            # Last chunk, process everything
-                            process_chunk = leftover + chunk
-                            leftover = b''
-                        
-                        # Process the chunk
-                        text = process_chunk.decode('utf-8', errors='replace')
-                        lines = text.splitlines()
-                        
-                        # Process lines into records
-                        record = []
-                        for line in lines:
-                            if '|' in line:
-                                fields = line.strip().split('|')
-                                if record and is_multiline_table:
-                                    # Handle multiline fields
-                                    record[-1] += '\n' + fields[0]
-                                    record.extend(fields[1:])
-                                else:
-                                    record.extend(fields)
-                                
-                                # Process complete records
-                                while len(record) >= expected_fields:
-                                    # Only convert date fields when needed
-                                    for idx in date_indices:
-                                        if idx < len(record):
-                                            record[idx] = convert_date(record[idx])
-                                    
-                                    yield record[:expected_fields]
-                                    record = record[expected_fields:]
-                            elif record and is_multiline_table:
-                                # Continue multiline field
-                                record[-1] += '\n' + line.strip()
-                        
-                        # Keep partial record for next chunk
-                        if record:
-                            leftover = '\n'.join(record).encode('utf-8')
-                            record = []
-                    
-                    # Process any remaining record
-                    if leftover:
-                        record = leftover.decode('utf-8', errors='replace').split('|')
-                        if len(record) < expected_fields:
-                            record = pad_record(record, expected_fields)
-                        for idx in date_indices:
-                            if idx < len(record):
-                                record[idx] = convert_date(record[idx])
-                        yield record[:expected_fields]
-        else:
-            # For smaller files, read the whole file at once
-            with open(file_path, 'r', encoding='utf-8', errors='replace') as file:
-                content = file.read()
-                lines = content.splitlines()
-                
-                record = []
-                for line in lines:
-                    if '|' in line:
-                        fields = line.strip().split('|')
-                        if record and is_multiline_table:
-                            # Handle multiline fields
-                            record[-1] += '\n' + fields[0]
-                            record.extend(fields[1:])
-                        else:
-                            record.extend(fields)
-                        
-                        # Process complete records
-                        while len(record) >= expected_fields:
-                            # Only convert date fields when needed
-                            for idx in date_indices:
-                                if idx < len(record):
-                                    record[idx] = convert_date(record[idx])
-                            
-                            yield record[:expected_fields]
-                            record = record[expected_fields:]
-                    elif record and is_multiline_table:
-                        # Continue multiline field
-                        record[-1] += '\n' + line.strip()
-                
-                # Process any remaining record
-                if record:
-                    if len(record) < expected_fields:
-                        record = pad_record(record, expected_fields)
-                    for idx in date_indices:
-                        if idx < len(record):
-                            record[idx] = convert_date(record[idx])
-                    yield record[:expected_fields]
-    
-    except (MemoryError, mmap.error, OSError) as e:
-        # Fallback to chunk-based file reading if memory mapping fails
-        logging.warning(f"Memory mapping failed for {file_path}, falling back to chunk reading: {e}")
-        
-        with open(file_path, 'r', encoding='utf-8', errors='replace') as file:
-            record = []
-            leftover = ""
+    # Read the file in chunks
+    with open(file_path, 'r', encoding='ISO-8859-1') as f:
+        # Use memory mapping for large files
+        try:
+            mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
             
-            while True:
-                chunk = file.read(BLOCK_SIZE)
-                if not chunk:
-                    break
-                
-                # Process the chunk
-                text = leftover + chunk
-                lines = text.splitlines()
-                
-                # If we're not at the end of the file and the last line is incomplete
-                if chunk and not chunk.endswith('\n'):
-                    leftover = lines[-1]
-                    lines = lines[:-1]
+            # Process the file line by line
+            current_pos = 0
+            while current_pos < mm.size():
+                # Find the next newline
+                next_newline = mm.find(b'\n', current_pos)
+                if next_newline == -1:
+                    # No more newlines, read to the end
+                    line = mm[current_pos:].decode('ISO-8859-1')
+                    current_pos = mm.size()
                 else:
-                    leftover = ""
+                    # Read up to the newline
+                    line = mm[current_pos:next_newline].decode('ISO-8859-1')
+                    current_pos = next_newline + 1
                 
-                # Process lines into records
-                for line in lines:
-                    if '|' in line:
-                        fields = line.strip().split('|')
-                        if record and is_multiline_table:
-                            # Handle multiline fields
-                            record[-1] += '\n' + fields[0]
-                            record.extend(fields[1:])
-                        else:
-                            record.extend(fields)
-                        
-                        # Process complete records
-                        while len(record) >= expected_fields:
-                            # Only convert date fields when needed
-                            for idx in date_indices:
-                                if idx < len(record):
-                                    record[idx] = convert_date(record[idx])
-                            
-                            yield record[:expected_fields]
-                            record = record[expected_fields:]
-                    elif record and is_multiline_table:
-                        # Continue multiline field
-                        record[-1] += '\n' + line.strip()
+                # Skip empty lines
+                if not line.strip():
+                    continue
+                
+                # Split the line into fields
+                fields = line.strip().split('|')
+                
+                # Skip records with wrong number of fields
+                if len(fields) < 2:  # At least record_type and unique_system_identifier
+                    continue
+                
+                # For HD table, check if we're filtering for active records
+                if active_only and table == "HD":
+                    # license_status is the 6th field (index 5) in HD table
+                    if len(fields) > 5 and fields[5] != "A":
+                        continue
+                
+                # For related tables, check if the record belongs to an active license
+                if active_only and table != "HD" and active_records is not None:
+                    # unique_system_identifier is the 2nd field (index 1)
+                    if len(fields) > 1:
+                        try:
+                            unique_id = int(fields[1])
+                            if unique_id not in active_records:
+                                continue
+                        except (ValueError, IndexError):
+                            # If we can't parse the ID, include the record to be safe
+                            pass
+                
+                yield fields
+                
+            mm.close()
+        except (ValueError, OSError, MemoryError) as e:
+            # Fall back to regular file reading if memory mapping fails
+            logging.warning(f"Memory mapping failed for {file_path}, falling back to regular file reading: {e}")
+            f.seek(0)
             
-            # Process any remaining record from leftover
-            if leftover:
-                if '|' in leftover:
-                    fields = leftover.strip().split('|')
-                    if record and is_multiline_table:
-                        record[-1] += '\n' + fields[0]
-                        record.extend(fields[1:])
-                    else:
-                        record.extend(fields)
-                elif record and is_multiline_table:
-                    record[-1] += '\n' + leftover.strip()
-            
-            # Process final record if any
-            if record:
-                if len(record) < expected_fields:
-                    record = pad_record(record, expected_fields)
-                for idx in date_indices:
-                    if idx < len(record):
-                        record[idx] = convert_date(record[idx])
-                yield record[:expected_fields]
+            for line in f:
+                # Skip empty lines
+                if not line.strip():
+                    continue
+                
+                # Split the line into fields
+                fields = line.strip().split('|')
+                
+                # Skip records with wrong number of fields
+                if len(fields) < 2:  # At least record_type and unique_system_identifier
+                    continue
+                
+                # For HD table, check if we're filtering for active records
+                if active_only and table == "HD":
+                    # license_status is the 6th field (index 5) in HD table
+                    if len(fields) > 5 and fields[5] != "A":
+                        continue
+                
+                # For related tables, check if the record belongs to an active license
+                if active_only and table != "HD" and active_records is not None:
+                    # unique_system_identifier is the 2nd field (index 1)
+                    if len(fields) > 1:
+                        try:
+                            unique_id = int(fields[1])
+                            if unique_id not in active_records:
+                                continue
+                        except (ValueError, IndexError):
+                            # If we can't parse the ID, include the record to be safe
+                            pass
+                
+                yield fields
 
 def pad_record(record, expected_length):
     """
@@ -346,10 +253,20 @@ def rebuild_all_indexes(conn, table):
     for index_sql in index_schemas.get(table, []):
         conn.execute(index_sql)
 
-def load_data(db, file_path, table, total_records, is_new_db=False):
+def load_data(db, file_path, table, total_records, is_new_db=False, active_only=False, active_records=None):
     """
     Load data directly into the target table with optimized batch processing.
     Drop and recreate table for updates instead of checking existing records.
+    
+    Args:
+        db: Database object
+        file_path: Path to the data file
+        table: Table name
+        total_records: Total number of records in the file
+        is_new_db: Whether this is a new database
+        active_only: Whether to only include active license records
+                    (corresponds to --active-only command-line parameter)
+        active_records: Set of unique_system_identifier values for active records (used for related tables)
     """
     global is_shutting_down
     
@@ -388,7 +305,7 @@ def load_data(db, file_path, table, total_records, is_new_db=False):
         cursor = conn.cursor()
         
         # Direct insert for all records
-        for record in parse_file(file_path, expected_length, table):
+        for record in parse_file(file_path, expected_length, table, active_only, active_records):
             if is_shutting_down:
                 break
             
@@ -468,10 +385,18 @@ def parse_counts_file(counts_file_path):
         logging.warning(f"Counts file not found at {counts_file_path}. Will proceed without record counts.")
         return counts
 
-def load_all_data(db, extract_path, use_multithreading, tables_to_process):
+def load_all_data(db, extract_path, use_multithreading, tables_to_process, active_only=False):
     """
     Load all data from the extracted files into the database.
     Uses in-memory journaling to avoid disk-based journal files.
+    
+    Args:
+        db: Database object
+        extract_path: Path to the extracted files
+        use_multithreading: Whether to use multithreading for data loading
+        tables_to_process: List of tables to process
+        active_only: Whether to only include active license records
+                    (corresponds to --active-only command-line parameter)
     """
     global is_shutting_down
     
@@ -529,6 +454,62 @@ def load_all_data(db, extract_path, use_multithreading, tables_to_process):
     remaining_tables = [t for t in tables_to_process if t not in priority_tables]
     ordered_tables = priority_tables + remaining_tables
     
+    # If active_only is True, we need to process HD table first to get the list of active records
+    active_records = None
+    if active_only:
+        logging.info("Active-only mode: Processing HD table first to identify active records")
+        
+        # Process HD table first to get the list of active records
+        hd_file_path = os.path.join(extract_path, "HD.dat")
+        if os.path.exists(hd_file_path):
+            # Create a temporary connection to collect active record IDs
+            temp_conn = None
+            try:
+                # Create a temporary table to store active record IDs
+                temp_conn = create_optimized_connection(db.db_path)
+                temp_conn.execute("CREATE TEMPORARY TABLE IF NOT EXISTS temp_active_records (unique_system_identifier INTEGER PRIMARY KEY)")
+                
+                # Process HD file to collect active record IDs
+                active_count = 0
+                batch = []
+                
+                for record in parse_file(hd_file_path, db.get_column_count("HD"), "HD", True):
+                    if len(record) > 1:  # At least record_type and unique_system_identifier
+                        try:
+                            unique_id = int(record[1])
+                            batch.append((unique_id,))
+                            active_count += 1
+                            
+                            if len(batch) >= 10000:
+                                temp_conn.executemany("INSERT OR IGNORE INTO temp_active_records VALUES (?)", batch)
+                                batch = []
+                        except (ValueError, IndexError):
+                            pass
+                
+                # Insert any remaining records
+                if batch:
+                    temp_conn.executemany("INSERT OR IGNORE INTO temp_active_records VALUES (?)", batch)
+                
+                # Get the set of active record IDs
+                cursor = temp_conn.execute("SELECT unique_system_identifier FROM temp_active_records")
+                active_records = set(row[0] for row in cursor.fetchall())
+                
+                logging.info(f"Identified {len(active_records)} active records")
+                
+                # Clean up
+                temp_conn.execute("DROP TABLE IF EXISTS temp_active_records")
+                temp_conn.close()
+                unregister_connection(temp_conn)
+                temp_conn = None
+            except Exception as e:
+                logging.error(f"Error collecting active record IDs: {e}")
+                if temp_conn:
+                    try:
+                        temp_conn.close()
+                        unregister_connection(temp_conn)
+                    except:
+                        pass
+    
     # Process each table
     for table in ordered_tables:
         if is_shutting_down:
@@ -555,7 +536,7 @@ def load_all_data(db, extract_path, use_multithreading, tables_to_process):
             retry_count = 0
             while retry_count < max_retries and not is_shutting_down:
                 try:
-                    load_data(db, file_path, table, total_records, is_new_db)
+                    load_data(db, file_path, table, total_records, is_new_db, active_only, active_records)
                     break  # Success, exit the retry loop
                 except sqlite3.OperationalError as e:
                     if "database is locked" in str(e) and retry_count < max_retries - 1:

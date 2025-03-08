@@ -18,6 +18,7 @@ A comprehensive utility for managing and querying FCC amateur radio license data
 - [Database Documentation](#database-documentation)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
+- [Changelog](#changelog)
 
 ## Overview
 
@@ -142,6 +143,7 @@ FCC Tool provides a comprehensive set of command-line options for database manag
 | `--compact` | Compact the database to reduce file size |
 | `--optimize` | Remove unused tables and compact the database |
 | `--rebuild-indexes` | Rebuild database indexes to improve search performance |
+| `--active-only` | Only keep active license records (license_status="A") in the database. Requires confirmation before deleting records |
 
 #### Query Options
 
@@ -173,6 +175,30 @@ Check if an update is available without downloading:
 ```
 python fcc_tool.py --check-update
 ```
+
+Update the database and only keep active license records:
+```
+python fcc_tool.py --update --active-only
+```
+
+Force a complete database rebuild with only active license records:
+```
+python fcc_tool.py --force-download --active-only
+```
+
+Filter an existing database to only keep active license records:
+```
+python fcc_tool.py --active-only
+```
+
+When using the `--active-only` option, the tool will:
+1. Display the number of inactive records that will be deleted
+2. Show a sample of call signs that will be removed
+3. Ask for confirmation before proceeding with the deletion
+
+This safety feature ensures you don't accidentally delete records you might need.
+
+When using `--active-only` with `--force-download`, the database will be completely rebuilt with only active records, skipping the check for inactive records in the existing database.
 
 Optimize the database to reduce its size:
 ```
@@ -310,5 +336,13 @@ Contributions are welcome! Please feel free to submit a Pull Request or open an 
 3. Commit your changes: `git commit -am 'Add some feature'`
 4. Push to the branch: `git push origin feature-name`
 5. Submit a pull request
+
+[↑ Back to Table of Contents](#table-of-contents-)
+
+## Changelog
+
+For a detailed list of changes between versions, please see the [CHANGELOG.md](CHANGELOG.md) file.
+
+The current version is 1.7.0, which adds the `--active-only` feature to filter out inactive license records.
 
 [↑ Back to Table of Contents](#table-of-contents-)

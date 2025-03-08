@@ -20,7 +20,7 @@ Metadata Management:
 
 Update Process:
 - check_for_update(): Check if a new version of the data is available
-- update_data(skip_download, keep_files, force_download, quiet): Update the database
+- update_data(skip_download, keep_files, force_download, quiet, active_only): Update the database
 
 Usage:
 -----
@@ -32,7 +32,8 @@ Usage:
        skip_download=False,  # Whether to skip the download step
        keep_files=False,     # Whether to keep temporary files
        force_download=False, # Whether to force download regardless of update status
-       quiet=False           # Whether to suppress INFO log messages
+       quiet=False,          # Whether to suppress INFO log messages
+       active_only=False     # Whether to only keep active license records (license_status="A")
    )
 
 Dependencies:
@@ -148,7 +149,7 @@ def check_for_update():
         logging.error(f"Error checking for updates: {e}")
         return False
 
-def update_data(skip_download=False, keep_files=False, force_download=False, quiet=False):
+def update_data(skip_download=False, keep_files=False, force_download=False, quiet=False, active_only=False):
     """
     Update the FCC data by downloading, extracting, and loading it into the database.
     
@@ -157,6 +158,8 @@ def update_data(skip_download=False, keep_files=False, force_download=False, qui
         keep_files (bool): Whether to keep the downloaded and extracted files after loading
         force_download (bool): Whether to force download even if no update is available
         quiet (bool): Whether to suppress INFO log messages (only show WARNING and above)
+        active_only (bool): Whether to only keep active license records (license_status="A"). 
+                           Command-line parameter is --active-only
     """
     # Set up logging with appropriate level
     logger.setup_logging(verbose=False)
@@ -228,7 +231,7 @@ def update_data(skip_download=False, keep_files=False, force_download=False, qui
     db.disable_indexes(tables_to_process)
     
     logging.info(f"Loading data into the database for tables: {tables_to_process}.")
-    loader.load_all_data(db, config.Config.EXTRACT_PATH, config.Config.USE_MULTITHREADING, tables_to_process)
+    loader.load_all_data(db, config.Config.EXTRACT_PATH, config.Config.USE_MULTITHREADING, tables_to_process, active_only)
     
     logging.info("Applying indexes.")
     db.enable_indexes(tables_to_process)
