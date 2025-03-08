@@ -152,7 +152,7 @@ FCC Tool provides a comprehensive set of command-line options for database manag
 | `--callsign CALLSIGN` | Look up a specific amateur radio call sign |
 | `--name NAME` | Search for records by name (case-insensitive wildcard search) |
 | `--state STATE` | Filter records by two-letter state code (e.g., CA, NY, TX) |
-| `--verbose` | Display all fields for each record |
+| `--verbose` | Display all fields for each record, including related records from other tables |
 
 [↑ Back to Table of Contents](#table-of-contents-)
 

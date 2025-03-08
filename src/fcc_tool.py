@@ -109,7 +109,7 @@ APP_NAME = "FCC Tool"
 
 def display_header():
     """
-    Display a nice framed header with program name, copyright, and version information.
+    Display a simple header with program name, version, and copyright information.
     """
     terminal_width = 80
     try:
@@ -127,29 +127,12 @@ def display_header():
     # Ensure minimum width
     terminal_width = max(terminal_width, 60)
     
-    # Create the header content
-    header_lines = [
-        f"{APP_NAME} v{__version__}",
-        f"Copyright © 2025 Tiran Dagan (Backstop Radio)",
-        "All rights reserved."
-    ]
-    
-    # Calculate the box width (content + padding)
-    content_width = max(len(line) for line in header_lines)
-    box_width = min(content_width + 4, terminal_width)
-    
-    # Create the box
-    horizontal_line = "+" + "-" * (box_width - 2) + "+"
-    empty_line = "|" + " " * (box_width - 2) + "|"
+    # Create the header line
+    header_line = f"\n{APP_NAME} v{__version__} - Copyright © 2025 Tiran Dagan (Backstop Radio)"
     
     # Print the header
-    print(horizontal_line)
-    print(empty_line)
-    for line in header_lines:
-        padding = (box_width - 2 - len(line)) // 2
-        print("|" + " " * padding + line + " " * (box_width - 2 - padding - len(line)) + "|")
-    print(empty_line)
-    print(horizontal_line)
+    print(header_line)
+    print("-" * min(len(header_line), terminal_width))
     print()
 
 def signal_handler(sig, frame):
@@ -370,7 +353,9 @@ def main():
         records = db.search_records_by_name_and_state(args.name, args.state)
         if records:
             print(f"Found {len(records)} records matching name: {args.name} in state: {args.state.upper()}")
-            for record in records:
+            for i, record in enumerate(records):
+                if i > 0:
+                    print("\n" + "=" * 40 + f" Record {i+1}/{len(records)} " + "=" * 40)
                 if args.verbose:
                     db.display_verbose_record(record)
                 else:
@@ -384,7 +369,9 @@ def main():
         records = db.search_records_by_name(args.name)
         if records:
             print(f"Found {len(records)} records matching name: {args.name} (case-insensitive)")
-            for record in records:
+            for i, record in enumerate(records):
+                if i > 0:
+                    print("\n" + "=" * 40 + f" Record {i+1}/{len(records)} " + "=" * 40)
                 if args.verbose:
                     db.display_verbose_record(record)
                 else:
@@ -398,7 +385,9 @@ def main():
         records = db.search_records_by_state(args.state)
         if records:
             print(f"Found {len(records)} records in state: {args.state.upper()}")
-            for record in records:
+            for i, record in enumerate(records):
+                if i > 0:
+                    print("\n" + "=" * 40 + f" Record {i+1}/{len(records)} " + "=" * 40)
                 if args.verbose:
                     db.display_verbose_record(record)
                 else:
