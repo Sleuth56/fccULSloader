@@ -1,0 +1,76 @@
+1520 INFO: PyInstaller: 6.12.0, contrib hooks: 2025.1
+1521 INFO: Python: 3.12.7 (conda)
+1522 INFO: Platform: Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.36
+1522 INFO: Python environment: /home/tiran/anaconda3
+1523 INFO: wrote /home/tiran/fccULSloader/fcc-tool-1.6.0.spec
+1559 INFO: Removing temporary files and cleaning cache in /home/tiran/.cache/pyinstaller
+1559 INFO: Module search paths (PYTHONPATH):
+['/home/tiran/anaconda3/lib/python312.zip',
+ '/home/tiran/anaconda3/lib/python3.12',
+ '/home/tiran/anaconda3/lib/python3.12/lib-dynload',
+ '/home/tiran/anaconda3/lib/python3.12/site-packages',
+ '/home/tiran/anaconda3/lib/python3.12/site-packages/setuptools/_vendor',
+ '/home/tiran/fccULSloader/src']
+3341 INFO: Appending 'datas' from .spec
+3341 INFO: checking Analysis
+3342 INFO: Building Analysis because Analysis-00.toc is non existent
+3342 INFO: Running Analysis Analysis-00.toc
+3342 INFO: Target bytecode optimization level: 0
+3342 INFO: Initializing module dependency graph...
+3342 INFO: Initializing module graph hook caches...
+3348 INFO: Analyzing modules for base_library.zip ...
+8447 INFO: Processing standard module hook 'hook-heapq.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+8524 INFO: Processing standard module hook 'hook-encodings.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+11327 INFO: Processing standard module hook 'hook-pickle.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+12552 INFO: Caching module dependency graph...
+12599 INFO: Looking for Python shared library...
+12606 INFO: Using Python shared library: /home/tiran/anaconda3/lib/libpython3.12.so.1.0
+12606 INFO: Analyzing /home/tiran/fccULSloader/src/fcc_tool.py
+12868 INFO: Processing standard module hook 'hook-platform.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+12949 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+12949 INFO: SetuptoolsInfo: initializing cached setuptools info...
+18431 INFO: Processing standard module hook 'hook-charset_normalizer.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+19206 INFO: Processing standard module hook 'hook-cryptography.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+22645 INFO: hook-cryptography: cryptography uses dynamically-linked OpenSSL: '/home/tiran/anaconda3/lib/libssl.so.3'
+22882 INFO: Processing standard module hook 'hook-bcrypt.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+23094 INFO: Processing standard module hook 'hook-certifi.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+23365 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+23443 INFO: Processing standard module hook 'hook-xml.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+23678 INFO: Processing standard module hook 'hook-pandas.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+1625 INFO: NumExpr defaulting to 8 threads.
+26283 INFO: Processing standard module hook 'hook-sysconfig.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+26298 INFO: Processing standard module hook 'hook-numpy.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+26903 WARNING: Conda distribution '__glibc', dependency of 'numpy', was not found. If you installed this distribution with pip then you may ignore this warning.
+26904 WARNING: Conda distribution '__glibc', dependency of 'numpy', was not found. If you installed this distribution with pip then you may ignore this warning.
+26904 WARNING: Conda distribution '__glibc', dependency of 'numpy', was not found. If you installed this distribution with pip then you may ignore this warning.
+26904 WARNING: Conda distribution '__glibc', dependency of 'numpy', was not found. If you installed this distribution with pip then you may ignore this warning.
+26904 WARNING: Conda distribution '__glibc', dependency of 'numpy', was not found. If you installed this distribution with pip then you may ignore this warning.
+27526 INFO: Processing standard module hook 'hook-difflib.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+28431 INFO: Processing standard module hook 'hook-psutil.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+29913 INFO: Processing standard module hook 'hook-pytz.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+30090 INFO: Processing standard module hook 'hook-pkg_resources.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+31800 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+31807 INFO: Processing standard module hook 'hook-packaging.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+31881 INFO: Processing pre-safe-import-module hook 'hook-jaraco.text.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+31881 INFO: Setuptools: 'jaraco.text' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.text'!
+31886 INFO: Processing standard module hook 'hook-setuptools.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+31897 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+31917 INFO: Processing pre-safe-import-module hook 'hook-jaraco.functools.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+31918 INFO: Setuptools: 'jaraco.functools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.functools'!
+31925 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+32126 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+32149 INFO: Processing standard module hook 'hook-importlib_metadata.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+32150 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+32177 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+32177 INFO: Setuptools: 'importlib_resources' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_resources'!
+32512 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+33046 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+33249 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks'
+33250 INFO: Processing pre-safe-import-module hook 'hook-jaraco.context.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+33250 INFO: Setuptools: 'jaraco.context' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.context'!
+33257 INFO: Processing pre-safe-import-module hook 'hook-backports.tarfile.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+33257 INFO: Setuptools: 'backports.tarfile' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.backports.tarfile'!
+33337 INFO: Processing standard module hook 'hook-backports.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+33338 INFO: Processing pre-safe-import-module hook 'hook-platformdirs.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/PyInstaller/hooks/pre_safe_import_module'
+33345 INFO: Processing standard module hook 'hook-platformdirs.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+33399 INFO: Processing standard module hook 'hook-pyarrow.py' from '/home/tiran/anaconda3/lib/python3.12/site-packages/_pyinstaller_hooks_contrib/stdhooks'

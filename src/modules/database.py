@@ -225,9 +225,27 @@ class FCCDatabase:
             dict: The record from the EN table if found, otherwise None.
         """
         query = """
-        SELECT * FROM EN WHERE unique_system_identifier=(
-            SELECT unique_system_identifier FROM HD WHERE call_sign=? AND license_status="A"
-        )
+        SELECT 
+            EN.*,
+            HD.call_sign,
+            HD.license_status,
+            HD.grant_date,
+            HD.expired_date,
+            HD.last_action_date,
+            AM.operator_class as license_class,
+            CASE 
+                WHEN EN.entity_name IS NOT NULL AND EN.entity_name != '' 
+                THEN EN.entity_name
+                ELSE TRIM(
+                    COALESCE(EN.first_name, '') || ' ' || 
+                    COALESCE(EN.mi, '') || ' ' || 
+                    COALESCE(EN.last_name, '')
+                )
+            END as formatted_name
+        FROM EN 
+        JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
+        LEFT JOIN AM ON EN.unique_system_identifier = AM.unique_system_identifier
+        WHERE HD.call_sign = ?
         """
         
         try:
@@ -367,41 +385,63 @@ class FCCDatabase:
         Returns:
             list: A list of dictionaries containing the matching records.
         """
-        # Create search pattern for wildcard search
-        search_pattern = f"%{name}%"
-        
-        # Optimize the query to use indexes more effectively
-        # First, get the unique_system_identifier values that match our criteria
-        query = """
-        WITH matching_ids AS (
-            SELECT DISTINCT EN.unique_system_identifier
+        try:
+            # Create search pattern for wildcard search
+            search_pattern = f"%{name}%"
+            
+            # Optimize the query to use indexes more effectively
+            # First, get the unique_system_identifier values that match our criteria
+            query = """
+            WITH matching_ids AS (
+                SELECT DISTINCT EN.unique_system_identifier
+                FROM EN 
+                JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
+                WHERE (
+                    LOWER(EN.entity_name) LIKE LOWER(?) OR 
+                    LOWER(EN.first_name) LIKE LOWER(?) OR 
+                    LOWER(EN.mi) LIKE LOWER(?) OR 
+                    LOWER(EN.last_name) LIKE LOWER(?)
+                )
+                AND HD.license_status = 'A'
+            )
+            SELECT 
+                EN.*,
+                HD.call_sign,
+                HD.license_status,
+                AM.operator_class as license_class,
+                CASE 
+                    WHEN EN.entity_name IS NOT NULL AND EN.entity_name != '' 
+                    THEN EN.entity_name
+                    ELSE TRIM(
+                        COALESCE(EN.first_name, '') || ' ' || 
+                        COALESCE(EN.mi, '') || ' ' || 
+                        COALESCE(EN.last_name, '')
+                    )
+                END as formatted_name
             FROM EN 
             JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
-            WHERE (
-                LOWER(EN.entity_name) LIKE LOWER(?) OR 
-                LOWER(EN.first_name) LIKE LOWER(?) OR 
-                LOWER(EN.mi) LIKE LOWER(?) OR 
-                LOWER(EN.last_name) LIKE LOWER(?)
-            )
-            AND HD.license_status = 'A'
-        )
-        SELECT EN.*, HD.call_sign 
-        FROM EN 
-        JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
-        JOIN matching_ids ON EN.unique_system_identifier = matching_ids.unique_system_identifier
-        ORDER BY HD.call_sign
-        """
-        
-        try:
+            LEFT JOIN AM ON EN.unique_system_identifier = AM.unique_system_identifier
+            JOIN matching_ids ON EN.unique_system_identifier = matching_ids.unique_system_identifier
+            ORDER BY HD.call_sign
+            """
+            
             conn = self.create_connection()
             if not conn:
+                print("Error: Could not create database connection")
                 return []
                 
             # Enable query optimization
             conn.execute("PRAGMA optimize")
             cursor = conn.cursor()
-            cursor.execute(query, (search_pattern, search_pattern, search_pattern, search_pattern))
-            records = cursor.fetchall()
+            
+            try:
+                cursor.execute(query, (search_pattern, search_pattern, search_pattern, search_pattern))
+                records = cursor.fetchall()
+            except sqlite3.Error as e:
+                print(f"SQL Error in search_records_by_name: {e}")
+                print(f"Query: {query}")
+                print(f"Parameters: {(search_pattern, search_pattern, search_pattern, search_pattern)}")
+                return []
             
             result_list = []
             if records:
@@ -423,8 +463,10 @@ class FCCDatabase:
             
             conn.close()
             return result_list
-        except sqlite3.Error as e:
-            print(f"Error searching records by name: {e}")
+        except Exception as e:
+            print(f"Unexpected error in search_records_by_name: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def search_records_by_state(self, state):
@@ -449,9 +491,23 @@ class FCCDatabase:
             WHERE UPPER(EN.state) = ?
             AND HD.license_status = 'A'
         )
-        SELECT EN.*, HD.call_sign 
+        SELECT 
+            EN.*,
+            HD.call_sign,
+            HD.license_status,
+            AM.operator_class as license_class,
+            CASE 
+                WHEN EN.entity_name IS NOT NULL AND EN.entity_name != '' 
+                THEN EN.entity_name
+                ELSE TRIM(
+                    COALESCE(EN.first_name, '') || ' ' || 
+                    COALESCE(EN.mi, '') || ' ' || 
+                    COALESCE(EN.last_name, '')
+                )
+            END as formatted_name
         FROM EN 
         JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
+        LEFT JOIN AM ON EN.unique_system_identifier = AM.unique_system_identifier
         JOIN matching_ids ON EN.unique_system_identifier = matching_ids.unique_system_identifier
         ORDER BY HD.call_sign
         """
@@ -532,9 +588,23 @@ class FCCDatabase:
         query += """
             AND HD.license_status = 'A'
         )
-        SELECT EN.*, HD.call_sign 
+        SELECT 
+            EN.*,
+            HD.call_sign,
+            HD.license_status,
+            AM.operator_class as license_class,
+            CASE 
+                WHEN EN.entity_name IS NOT NULL AND EN.entity_name != '' 
+                THEN EN.entity_name
+                ELSE TRIM(
+                    COALESCE(EN.first_name, '') || ' ' || 
+                    COALESCE(EN.mi, '') || ' ' || 
+                    COALESCE(EN.last_name, '')
+                )
+            END as formatted_name
         FROM EN 
         JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
+        LEFT JOIN AM ON EN.unique_system_identifier = AM.unique_system_identifier
         JOIN matching_ids ON EN.unique_system_identifier = matching_ids.unique_system_identifier
         ORDER BY HD.call_sign
         """
@@ -797,3 +867,59 @@ class FCCDatabase:
                 else:
                     print(f"{f}: {record[f]}")
         print("-" * 40)  # Separator between records
+
+    def search_records(self, callsign=None, name=None, state=None, sort=None, status=None, license_class=None, page=1, per_page=20):
+        """
+        Search for records based on various criteria.
+        
+        Args:
+            callsign (str): Call sign to search for
+            name (str): Name to search for
+            state (str): State to filter by
+            sort (str): Field to sort by
+            status (str): License status to filter by
+            license_class (str): License class to filter by
+            page (int): Page number (1-based)
+            per_page (int): Number of results per page
+            
+        Returns:
+            dict: Dictionary containing records and total count
+        """
+        try:
+            results = []
+            if callsign:
+                rec = self.get_record_by_call_sign(callsign)
+                if rec:
+                    rec['call_sign'] = callsign
+                    results = [rec]
+            elif name and state:
+                results = self.search_records_by_name_and_state(name, state)
+            elif name:
+                results = self.search_records_by_name(name)
+            elif state:
+                results = self.search_records_by_state(state)
+            
+            # Filter by status if requested
+            if status:
+                results = [r for r in results if r.get('license_status', '').upper() == status.upper()]
+            
+            # Filter by license class if requested
+            if license_class:
+                results = [r for r in results if r.get('license_class', '').upper() == license_class.upper()]
+            
+            # Sort if requested
+            if sort:
+                results = sorted(results, key=lambda r: (r.get(sort, '') or '').upper())
+            
+            total_results = len(results)
+            start = (page - 1) * per_page
+            end = start + per_page
+            
+            return {
+                'records': results[start:end],
+                'total': total_results
+            }
+            
+        except Exception as e:
+            logger.error(f"Error searching records: {e}")
+            raise DatabaseError("Failed to search records") from e
