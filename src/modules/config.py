@@ -59,6 +59,6 @@ class Config:
     USE_MULTITHREADING = False
     
     # For just the tables needed for the FCC Tool, uncomment the following line and comment the one above it
-    # TABLES_TO_PROCESS = ["AM","EN","HD"]
+    TABLES_TO_PROCESS = ["AM","EN","HD"]
     # For a full download into the database of all FCC files, uncomment the following line and comment the one above it
-    TABLES_TO_PROCESS = ["AM", "CO", "EN", "HD", "HS", "LA", "SC", "SF"]
+    # TABLES_TO_PROCESS = ["AM", "CO", "EN", "HD", "HS", "LA", "SC", "SF"]

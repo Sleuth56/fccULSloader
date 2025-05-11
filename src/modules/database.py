@@ -225,9 +225,27 @@ class FCCDatabase:
             dict: The record from the EN table if found, otherwise None.
         """
         query = """
-        SELECT * FROM EN WHERE unique_system_identifier=(
-            SELECT unique_system_identifier FROM HD WHERE call_sign=? AND license_status="A"
-        )
+        SELECT 
+            EN.*,
+            HD.call_sign,
+            HD.license_status,
+            HD.grant_date,
+            HD.expired_date,
+            HD.last_action_date,
+            AM.operator_class as license_class,
+            CASE 
+                WHEN EN.entity_name IS NOT NULL AND EN.entity_name != '' 
+                THEN EN.entity_name
+                ELSE TRIM(
+                    COALESCE(EN.first_name, '') || ' ' || 
+                    COALESCE(EN.mi, '') || ' ' || 
+                    COALESCE(EN.last_name, '')
+                )
+            END as formatted_name
+        FROM EN 
+        JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
+        LEFT JOIN AM ON EN.unique_system_identifier = AM.unique_system_identifier
+        WHERE HD.call_sign = ?
         """
         
         try:
@@ -367,41 +385,63 @@ class FCCDatabase:
         Returns:
             list: A list of dictionaries containing the matching records.
         """
-        # Create search pattern for wildcard search
-        search_pattern = f"%{name}%"
-        
-        # Optimize the query to use indexes more effectively
-        # First, get the unique_system_identifier values that match our criteria
-        query = """
-        WITH matching_ids AS (
-            SELECT DISTINCT EN.unique_system_identifier
+        try:
+            # Create search pattern for wildcard search
+            search_pattern = f"%{name}%"
+            
+            # Optimize the query to use indexes more effectively
+            # First, get the unique_system_identifier values that match our criteria
+            query = """
+            WITH matching_ids AS (
+                SELECT DISTINCT EN.unique_system_identifier
+                FROM EN 
+                JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
+                WHERE (
+                    LOWER(EN.entity_name) LIKE LOWER(?) OR 
+                    LOWER(EN.first_name) LIKE LOWER(?) OR 
+                    LOWER(EN.mi) LIKE LOWER(?) OR 
+                    LOWER(EN.last_name) LIKE LOWER(?)
+                )
+                AND HD.license_status = 'A'
+            )
+            SELECT 
+                EN.*,
+                HD.call_sign,
+                HD.license_status,
+                AM.operator_class as license_class,
+                CASE 
+                    WHEN EN.entity_name IS NOT NULL AND EN.entity_name != '' 
+                    THEN EN.entity_name
+                    ELSE TRIM(
+                        COALESCE(EN.first_name, '') || ' ' || 
+                        COALESCE(EN.mi, '') || ' ' || 
+                        COALESCE(EN.last_name, '')
+                    )
+                END as formatted_name
             FROM EN 
             JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
-            WHERE (
-                LOWER(EN.entity_name) LIKE LOWER(?) OR 
-                LOWER(EN.first_name) LIKE LOWER(?) OR 
-                LOWER(EN.mi) LIKE LOWER(?) OR 
-                LOWER(EN.last_name) LIKE LOWER(?)
-            )
-            AND HD.license_status = 'A'
-        )
-        SELECT EN.*, HD.call_sign 
-        FROM EN 
-        JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
-        JOIN matching_ids ON EN.unique_system_identifier = matching_ids.unique_system_identifier
-        ORDER BY HD.call_sign
-        """
-        
-        try:
+            LEFT JOIN AM ON EN.unique_system_identifier = AM.unique_system_identifier
+            JOIN matching_ids ON EN.unique_system_identifier = matching_ids.unique_system_identifier
+            ORDER BY HD.call_sign
+            """
+            
             conn = self.create_connection()
             if not conn:
+                print("Error: Could not create database connection")
                 return []
                 
             # Enable query optimization
             conn.execute("PRAGMA optimize")
             cursor = conn.cursor()
-            cursor.execute(query, (search_pattern, search_pattern, search_pattern, search_pattern))
-            records = cursor.fetchall()
+            
+            try:
+                cursor.execute(query, (search_pattern, search_pattern, search_pattern, search_pattern))
+                records = cursor.fetchall()
+            except sqlite3.Error as e:
+                print(f"SQL Error in search_records_by_name: {e}")
+                print(f"Query: {query}")
+                print(f"Parameters: {(search_pattern, search_pattern, search_pattern, search_pattern)}")
+                return []
             
             result_list = []
             if records:
@@ -423,8 +463,10 @@ class FCCDatabase:
             
             conn.close()
             return result_list
-        except sqlite3.Error as e:
-            print(f"Error searching records by name: {e}")
+        except Exception as e:
+            print(f"Unexpected error in search_records_by_name: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def search_records_by_state(self, state):
@@ -449,9 +491,23 @@ class FCCDatabase:
             WHERE UPPER(EN.state) = ?
             AND HD.license_status = 'A'
         )
-        SELECT EN.*, HD.call_sign 
+        SELECT 
+            EN.*,
+            HD.call_sign,
+            HD.license_status,
+            AM.operator_class as license_class,
+            CASE 
+                WHEN EN.entity_name IS NOT NULL AND EN.entity_name != '' 
+                THEN EN.entity_name
+                ELSE TRIM(
+                    COALESCE(EN.first_name, '') || ' ' || 
+                    COALESCE(EN.mi, '') || ' ' || 
+                    COALESCE(EN.last_name, '')
+                )
+            END as formatted_name
         FROM EN 
         JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
+        LEFT JOIN AM ON EN.unique_system_identifier = AM.unique_system_identifier
         JOIN matching_ids ON EN.unique_system_identifier = matching_ids.unique_system_identifier
         ORDER BY HD.call_sign
         """
@@ -532,9 +588,23 @@ class FCCDatabase:
         query += """
             AND HD.license_status = 'A'
         )
-        SELECT EN.*, HD.call_sign 
+        SELECT 
+            EN.*,
+            HD.call_sign,
+            HD.license_status,
+            AM.operator_class as license_class,
+            CASE 
+                WHEN EN.entity_name IS NOT NULL AND EN.entity_name != '' 
+                THEN EN.entity_name
+                ELSE TRIM(
+                    COALESCE(EN.first_name, '') || ' ' || 
+                    COALESCE(EN.mi, '') || ' ' || 
+                    COALESCE(EN.last_name, '')
+                )
+            END as formatted_name
         FROM EN 
         JOIN HD ON EN.unique_system_identifier = HD.unique_system_identifier
+        LEFT JOIN AM ON EN.unique_system_identifier = AM.unique_system_identifier
         JOIN matching_ids ON EN.unique_system_identifier = matching_ids.unique_system_identifier
         ORDER BY HD.call_sign
         """
@@ -781,352 +851,75 @@ class FCCDatabase:
         
         print("-" * 40)  # Separator between records
 
-    def get_related_records(self, unique_system_identifier):
-        """
-        Get related records from all available tables for a given unique_system_identifier.
-        
-        Args:
-            unique_system_identifier (int): The unique system identifier to search for
-            
-        Returns:
-            dict: A dictionary with table names as keys and related records as values
-        """
-        related_records = {}
-        conn = self.create_connection()
-        if conn:
-            try:
-                cursor = conn.cursor()
-                
-                # Get a list of all tables in the database
-                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-                tables = [row[0] for row in cursor.fetchall()]
-                
-                # Check each table for related records
-                for table in tables:
-                    # Skip the HD table as it's the main record
-                    if table == 'HD':
-                        continue
-                    
-                    # Check if the table has a unique_system_identifier column
-                    cursor.execute(f"PRAGMA table_info({table})")
-                    columns = [row[1] for row in cursor.fetchall()]
-                    
-                    if 'unique_system_identifier' in columns:
-                        # Get related records
-                        cursor.execute(f"SELECT * FROM {table} WHERE unique_system_identifier = ?", 
-                                      (unique_system_identifier,))
-                        
-                        # Get column names
-                        column_names = [description[0] for description in cursor.description]
-                        
-                        # Fetch all related records
-                        rows = cursor.fetchall()
-                        if rows:
-                            # Convert rows to dictionaries
-                            records = []
-                            for row in rows:
-                                record_dict = {}
-                                for i, column in enumerate(column_names):
-                                    record_dict[column] = row[i]
-                                records.append(record_dict)
-                            
-                            related_records[table] = records
-            except sqlite3.Error as e:
-                logging.error(f"Error fetching related records: {e}")
-            finally:
-                conn.close()
-        
-        return related_records
-
     def display_verbose_record(self, record):
         """
-        Displays all fields of a record and related records from other tables,
-        organized in logical groups with improved formatting.
+        Displays all fields of a record.
         
         Args:
             record (dict): The record to display.
         """
-        # Define field groups for better organization
-        field_groups = {
-            "License": [
-                "call_sign", "license_status", "radio_service_code", "grant_date", 
-                "expired_date", "cancellation_date", "effective_date", "last_action_date"
-            ],
-            "Operator": [
-                "operator_class", "group_code", "region_code", "trustee_call_sign", 
-                "trustee_indicator", "trustee_name", "systematic_call_sign_change", 
-                "vanity_call_sign_change", "vanity_relationship", "previous_call_sign", 
-                "previous_operator_class"
-            ],
-            "Personal": [
-                "entity_name", "first_name", "mi", "last_name", "suffix", "gender", 
-                "entity_type", "licensee_id", "fcc_registration_number"
-            ],
-            "Contact": [
-                "phone", "fax", "email", "attention_line", "street_address", "city", "state", "zip_code", 
-                "po_box"
-            ],
-            "Certification": [
-                "certifier_first_name", "certifier_mi", "certifier_last_name", 
-                "certifier_suffix", "certifier_title", "physician_certification", 
-                "ve_signature"
-            ],
-            "System": [
-                "unique_system_identifier", "uls_file_number", "ebf_number"
-            ]
-        }
-        
-        # Fields to combine on a single line
-        combined_fields = {
-            "name": ["first_name", "mi", "last_name", "suffix"],
-            "address": ["street_address", "city", "state", "zip_code"],
-            "certifier": ["certifier_first_name", "certifier_mi", "certifier_last_name", "certifier_suffix"]
-        }
-        
-        # Shorthand labels for fields
-        field_labels = {
-            "unique_system_identifier": "UID",
-            "uls_file_number": "ULS#",
-            "ebf_number": "EBF#",
-            "fcc_registration_number": "FRN",
-            "first_name": "First",
-            "mi": "MI",
-            "last_name": "Last",
-            "suffix": "Suffix",
-            "street_address": "Address",
-            "zip_code": "ZIP",
-            "attention_line": "Attention",
-            "certifier_first_name": "Cert. First",
-            "certifier_mi": "Cert. MI",
-            "certifier_last_name": "Cert. Last",
-            "certifier_suffix": "Cert. Suffix",
-            "radio_service_code": "Service",
-            "license_status": "Status",
-            "operator_class": "Class",
-            "systematic_call_sign_change": "Systematic Change",
-            "vanity_call_sign_change": "Vanity Change",
-            "previous_call_sign": "Prev. Call",
-            "previous_operator_class": "Prev. Class"
-        }
-        
-        # Table descriptions
-        table_descriptions = {
-            "HD": "License Header",
-            "EN": "Entity/Licensee",
-            "AM": "Amateur License",
-            "HS": "License History",
-            "CO": "Comments",
-            "LA": "License Attachments",
-            "SC": "Special Conditions",
-            "SF": "Special Free Form Conditions"
-        }
-        
-        # Display main record (HD table)
-        print("\n" + "=" * 80)
-        print(f"{table_descriptions.get('HD', 'HD')} (HD) RECORD".center(80))
-        print("=" * 80)
-        
-        # Get all fields in the record
-        all_fields = set(record.keys())
-        processed_fields = set()
-        
-        # Process combined fields first
-        for group_name, fields in field_groups.items():
-            # Check if any fields in this group exist in the record
-            group_fields = [f for f in fields if f in record and record[f]]
-            
-            if group_fields:
-                print(f"\n{group_name}:")
-                
-                # Process combined fields within this group
-                for combo_name, combo_fields in combined_fields.items():
-                    # Check if any of the combo fields are in this group
-                    combo_group_fields = [f for f in combo_fields if f in group_fields]
-                    if combo_group_fields:
-                        # Mark these fields as processed
-                        for f in combo_group_fields:
-                            processed_fields.add(f)
-                            group_fields.remove(f)
-                        
-                        # Build the combined output
-                        combo_parts = []
-                        for f in combo_fields:
-                            if f in record and record[f]:
-                                label = field_labels.get(f, f.replace('_', ' ').title())
-                                value = record[f]
-                                if f in fcc_code_defs.field_code_mappings and value in fcc_code_defs.field_code_mappings[f]:
-                                    code_dict = fcc_code_defs.field_code_mappings[f]
-                                    combo_parts.append(f"{label}: {code_dict[value]} ({value})")
-                                else:
-                                    combo_parts.append(f"{label}: {value}")
-                        
-                        if combo_parts:
-                            print(f"  {', '.join(combo_parts)}")
-                
-                # Process remaining fields in this group
-                for f in group_fields:
-                    processed_fields.add(f)
-                    label = field_labels.get(f, f.replace('_', ' ').title())
-                    if f in fcc_code_defs.field_code_mappings and record[f] in fcc_code_defs.field_code_mappings[f]:
-                        code_dict = fcc_code_defs.field_code_mappings[f]
-                        print(f"  {label}: {code_dict[record[f]]} ({record[f]})")
-                    else:
-                        print(f"  {label}: {record[f]}")
-        
-        # Display any fields that weren't in any group
-        remaining_fields = all_fields - processed_fields - {"record_type"}  # Exclude record_type as it's used as header
-        if remaining_fields:
-            print("\nOther:")
-            for f in sorted(remaining_fields):
-                if record[f]:
-                    label = field_labels.get(f, f.replace('_', ' ').title())
-                    if f in fcc_code_defs.field_code_mappings and record[f] in fcc_code_defs.field_code_mappings[f]:
-                        code_dict = fcc_code_defs.field_code_mappings[f]
-                        print(f"  {label}: {code_dict[record[f]]} ({record[f]})")
-                    else:
-                        print(f"  {label}: {record[f]}")
-        
-        # Get and display related records if unique_system_identifier is available
-        self._display_related_records(record, field_groups, combined_fields, field_labels, table_descriptions)
-        
-        print("\n" + "=" * 80)
-    
-    def _display_related_records(self, record, field_groups, combined_fields, field_labels, table_descriptions):
+        for f in record:
+            if record[f]:
+                if f == 'entity_type' and record[f] in fcc_code_defs.entity_type:
+                    print(f"{f}: {fcc_code_defs.entity_type[record[f]]} ({record[f]})")
+                elif f == 'applicant_type_code' and record[f] in fcc_code_defs.applicant_type_code:
+                    print(f"{f}: {fcc_code_defs.applicant_type_code[record[f]]} ({record[f]})")
+                else:
+                    print(f"{f}: {record[f]}")
+        print("-" * 40)  # Separator between records
+
+    def search_records(self, callsign=None, name=None, state=None, sort=None, status=None, license_class=None, page=1, per_page=20):
         """
-        Helper method to display related records for a given HD record.
+        Search for records based on various criteria.
         
         Args:
-            record (dict): The main HD record
-            field_groups (dict): Dictionary of field groups
-            combined_fields (dict): Dictionary of fields to combine
-            field_labels (dict): Dictionary of field labels
-            table_descriptions (dict): Dictionary of table descriptions
+            callsign (str): Call sign to search for
+            name (str): Name to search for
+            state (str): State to filter by
+            sort (str): Field to sort by
+            status (str): License status to filter by
+            license_class (str): License class to filter by
+            page (int): Page number (1-based)
+            per_page (int): Number of results per page
+            
+        Returns:
+            dict: Dictionary containing records and total count
         """
-        if 'unique_system_identifier' not in record:
-            return
+        try:
+            results = []
+            if callsign:
+                rec = self.get_record_by_call_sign(callsign)
+                if rec:
+                    rec['call_sign'] = callsign
+                    results = [rec]
+            elif name and state:
+                results = self.search_records_by_name_and_state(name, state)
+            elif name:
+                results = self.search_records_by_name(name)
+            elif state:
+                results = self.search_records_by_state(state)
             
-        related_records = self.get_related_records(record['unique_system_identifier'])
-        
-        if not related_records:
-            return
+            # Filter by status if requested
+            if status:
+                results = [r for r in results if r.get('license_status', '').upper() == status.upper()]
             
-        for table, records in related_records.items():
-            print("\n" + "-" * 80)
-            table_desc = table_descriptions.get(table, table)
-            print(f"{f'{table_desc} ({table}) RECORDS ({len(records)})':^80}")
-            print("-" * 80)
+            # Filter by license class if requested
+            if license_class:
+                results = [r for r in results if r.get('license_class', '').upper() == license_class.upper()]
             
-            # Check if records have similar structure to display in table format
-            if len(records) > 1:
-                # Get common fields across all records
-                common_fields = set(records[0].keys())
-                for r in records[1:]:
-                    common_fields &= set(r.keys())
-                
-                # Remove fields that are identical across all records to avoid duplication
-                duplicate_fields = set()
-                for field in common_fields:
-                    if field != 'unique_system_identifier' and len(set(r[field] for r in records)) == 1:
-                        # This field has the same value across all records
-                        duplicate_fields.add(field)
-                        # Display the common value once
-                        value = records[0][field]
-                        if value:
-                            label = field_labels.get(field, field.replace('_', ' ').title())
-                            if field in fcc_code_defs.field_code_mappings and value in fcc_code_defs.field_code_mappings[field]:
-                                code_dict = fcc_code_defs.field_code_mappings[field]
-                                print(f"  {label}: {code_dict[value]} ({value})")
-                            else:
-                                print(f"  {label}: {value}")
-                
-                # Remove duplicate fields from common_fields
-                common_fields -= duplicate_fields
-                # Also remove call_sign as it's assumed to be the same as in the HD record
-                common_fields -= {"call_sign"}
-                
-                # If there are still varying fields, display them in a compact format
-                if common_fields:
-                    # Display records in a more compact format
-                    for i, related_record in enumerate(records):
-                        if i == 0:
-                            print("\n  Record details:")
-                        print(f"  {i+1}.", end=" ")
-                        
-                        # Display fields with varying values
-                        field_values = []
-                        for field in sorted(common_fields):
-                            if related_record[field]:
-                                label = field_labels.get(field, field.replace('_', ' ').title())
-                                value = related_record[field]
-                                if field in fcc_code_defs.field_code_mappings and value in fcc_code_defs.field_code_mappings[field]:
-                                    code_dict = fcc_code_defs.field_code_mappings[field]
-                                    field_values.append(f"{label}: {code_dict[value]} ({value})")
-                                else:
-                                    field_values.append(f"{label}: {value}")
-                        
-                        print(", ".join(field_values))
-            else:
-                # Only one record, display it normally
-                related_record = records[0]
-                
-                # Get all fields in the related record
-                related_all_fields = set(related_record.keys())
-                related_processed_fields = set()
-                
-                # Process combined fields first
-                for group_name, fields in field_groups.items():
-                    # Check if any fields in this group exist in the related record
-                    group_fields = [f for f in fields if f in related_record and related_record[f]]
-                    
-                    if group_fields:
-                        print(f"\n{group_name}:")
-                        
-                        # Process combined fields within this group
-                        for combo_name, combo_fields in combined_fields.items():
-                            # Check if any of the combo fields are in this group
-                            combo_group_fields = [f for f in combo_fields if f in group_fields]
-                            if combo_group_fields:
-                                # Mark these fields as processed
-                                for f in combo_group_fields:
-                                    related_processed_fields.add(f)
-                                    group_fields.remove(f)
-                                
-                                # Build the combined output
-                                combo_parts = []
-                                for f in combo_fields:
-                                    if f in related_record and related_record[f]:
-                                        label = field_labels.get(f, f.replace('_', ' ').title())
-                                        value = related_record[f]
-                                        if f in fcc_code_defs.field_code_mappings and value in fcc_code_defs.field_code_mappings[f]:
-                                            code_dict = fcc_code_defs.field_code_mappings[f]
-                                            combo_parts.append(f"{label}: {code_dict[value]} ({value})")
-                                        else:
-                                            combo_parts.append(f"{label}: {value}")
-                                
-                                if combo_parts:
-                                    print(f"  {', '.join(combo_parts)}")
-                        
-                        # Process remaining fields in this group
-                        for f in group_fields:
-                            related_processed_fields.add(f)
-                            label = field_labels.get(f, f.replace('_', ' ').title())
-                            value = related_record[f]
-                            if f in fcc_code_defs.field_code_mappings and value in fcc_code_defs.field_code_mappings[f]:
-                                code_dict = fcc_code_defs.field_code_mappings[f]
-                                print(f"  {label}: {code_dict[value]} ({value})")
-                            else:
-                                print(f"  {label}: {value}")
-                
-                # Display any fields that weren't in any group
-                related_remaining_fields = related_all_fields - related_processed_fields - {"record_type", "call_sign"}
-                if related_remaining_fields:
-                    print("\nOther:")
-                    for f in sorted(related_remaining_fields):
-                        value = related_record[f]
-                        if value:
-                            label = field_labels.get(f, f.replace('_', ' ').title())
-                            if f in fcc_code_defs.field_code_mappings and value in fcc_code_defs.field_code_mappings[f]:
-                                code_dict = fcc_code_defs.field_code_mappings[f]
-                                print(f"  {label}: {code_dict[value]} ({value})")
-                            else:
-                                print(f"  {label}: {value}")
+            # Sort if requested
+            if sort:
+                results = sorted(results, key=lambda r: (r.get(sort, '') or '').upper())
+            
+            total_results = len(results)
+            start = (page - 1) * per_page
+            end = start + per_page
+            
+            return {
+                'records': results[start:end],
+                'total': total_results
+            }
+            
+        except Exception as e:
+            logger.error(f"Error searching records: {e}")
+            raise DatabaseError("Failed to search records") from e
