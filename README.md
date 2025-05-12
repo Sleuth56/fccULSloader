@@ -1,16 +1,18 @@
 # FCC Tool
 
-A comprehensive utility for managing and querying FCC amateur radio license database files, creating a local SQLite copy of the entire FCC ULS database for offline use.
+A comprehensive utility for managing and querying FCC amateur radio license database files, creating a local SQLite copy of the entire FCC ULS database for offline use. Includes both a command-line interface and a modern web interface.
 
 ## Table of Contents 📑
 
 - [Overview](#overview)
 - [Author and License](#author-and-license)
 - [Features](#features)
+  - [Web Interface](#web-interface)
   - [Database Management](#database-management)
   - [Query Capabilities](#query-capabilities)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Web Interface](#using-the-web-interface)
   - [Command Line Options](#command-line-options)
   - [Examples](#examples)
 - [Project Structure](#project-structure)
@@ -22,7 +24,7 @@ A comprehensive utility for managing and querying FCC amateur radio license data
 
 ## Overview
 
-FCC Tool is a command-line application that creates and maintains a complete local SQLite copy of the FCC Amateur Radio License database. This allows you to develop applications that can look up any callsign, entity, or license name without requiring internet connectivity. The tool provides functionality to download and update the database from the [FCC's Universal Licensing System (ULS)](https://www.fcc.gov/wireless/universal-licensing-system), look up amateur radio call signs, search for licensees by name or state, and maintain the database for optimal performance.
+FCC Tool is a command-line and web application that creates and maintains a complete local SQLite copy of the FCC Amateur Radio License database. This allows you to develop applications that can look up any callsign, entity, or license name without requiring internet connectivity. The tool provides functionality to download and update the database from the [FCC's Universal Licensing System (ULS)](https://www.fcc.gov/wireless/universal-licensing-system), look up amateur radio call signs, search for licensees by name or state, and maintain the database for optimal performance.
 
 The offline nature of this tool makes it particularly valuable for amateur radio operators in the field, emergency communications scenarios, or any situation where internet access may be limited or unavailable.
 
@@ -58,6 +60,59 @@ SOFTWARE.
 [↑ Back to Table of Contents](#table-of-contents-)
 
 ## Features
+
+### Web Interface
+**[[Features](#features) > Web Interface]**
+
+FCC Tool includes a modern, responsive web interface (`fcc_tool_web.py`) that provides an elegant way to search and view FCC amateur radio license data:
+
+#### Search Interface
+- **Clean, Modern Design**: A beautiful, intuitive search interface
+- **Multiple Search Options**: 
+  - Callsign lookup (e.g., W1AW)
+  - Name search (partial or full)
+  - State filtering with searchable dropdown
+- **Keyboard Shortcuts**: Quick navigation using Alt + C/N/S
+- **Search Tips**: Built-in help and search suggestions
+- **Recent Searches**: Track and quickly access your recent searches
+
+![Main Search Interface](docs/screenshots/main_search.jpg)
+*Clean, modern search interface with keyboard shortcuts and search tips*
+
+#### Search Results
+- **Flexible Views**: 
+  - Table view for compact listing
+  - Card view for detailed information
+- **Advanced Filtering**:
+  - License status (Active/Inactive)
+  - License class (Extra, General, Technician)
+  - Sort by various fields
+- **Pagination**: Browse through large result sets
+- **Quick Actions**: Direct access to detailed profiles
+
+![Search Results](docs/screenshots/search_results.jpg)
+*Search results with advanced filtering and sorting options*
+
+#### Profile View
+- **Detailed Information**: Comprehensive license details
+- **Interactive Map**: View licensee location
+- **Personal Information**: Entity details and contact info
+- **License Details**: Status, class, dates, and more
+- **Dark Mode**: Toggle between light and dark themes
+- **Responsive Design**: Works on desktop and mobile
+
+![Profile View](docs/screenshots/profile_view.jpg)
+*Detailed profile view with interactive map and comprehensive license information*
+
+The web interface is built with:
+- Flask for the backend
+- Bootstrap 5 for responsive design
+- Leaflet.js for interactive maps
+- Modern CSS with animations and transitions
+- Session management for recent searches
+- Real-time search filtering
+
+[↑ Back to Table of Contents](#table-of-contents-)
 
 ### Database Management
 **[[Features](#features) > Database Management]**
@@ -109,13 +164,23 @@ FCC Tool can be run directly from Python source or as a standalone executable. F
 
 #### Running from Python Source
 
-```
+```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the application
+# Run the CLI application
 python fcc_tool.py --help
+
+# Run the web interface
+python fcc_tool_web.py
 ```
+
+The web interface requires additional Python packages:
+- Flask
+- Flask-Session
+- Leaflet.js (included via CDN)
+
+These are all included in requirements.txt.
 
 #### Using Pre-built Executables
 
@@ -124,6 +189,44 @@ Download the latest release from the [Releases page](https://github.com/tirandag
 [↑ Back to Table of Contents](#table-of-contents-)
 
 ## Usage
+
+### Using the Web Interface
+**[[Usage](#usage) > Web Interface]**
+
+To start the web interface:
+
+```bash
+python src/fcc_tool_web.py
+```
+
+This will start a Flask web server on port 5000. You can then access the web interface by opening a web browser and navigating to:
+
+```
+http://localhost:5000
+```
+
+The web interface provides:
+
+1. **Search Options**:
+   - Search by callsign (e.g., W1AW)
+   - Search by name (partial or full)
+   - Filter by state
+   
+2. **Advanced Filtering**:
+   - License status (Active/Inactive)
+   - License class (Extra, General, Technician)
+   - Sort results by various fields
+   
+3. **Keyboard Shortcuts**:
+   - Alt + C: Focus callsign field
+   - Alt + N: Focus name field
+   - Alt + S: Focus state field
+   - Ctrl + T: Toggle dark/light theme
+
+4. **View Options**:
+   - Table view for compact listing
+   - Card view for detailed information
+   - Interactive map view for location data
 
 ### Command Line Options
 **[[Usage](#usage) > Command Line Options]**
@@ -246,9 +349,14 @@ The project is organized as follows:
 ```
 fcc-tool/
 ├── src/                  # Source code directory
-│   ├── fcc_tool.py       # Main application script
+│   ├── fcc_tool.py       # Main CLI application script
+│   ├── fcc_tool_web.py   # Web interface application
+│   ├── flask_session/    # Flask session storage
+│   │   ├── css/         # Stylesheets
+│   │   ├── js/          # JavaScript files
+│   │   └── img/         # Images and icons
 │   ├── modules/          # Application modules
-│   └── tests/            # Test files
+│   └── tests/           # Test files
 ├── create_build/         # Build scripts and tools
 │   ├── build_executable.py  # Main build script
 │   ├── simple_build.py   # Simplified build script
