@@ -2655,12 +2655,15 @@ LICENSE_CLASS_MAP = {
 # Add FCC code definitions
 FCC_CODE_DEFS = {
     'entity_type': {
-        'I': 'Individual',
-        'B': 'Amateur Club',
-        'G': 'Government Entity',
-        'M': 'Military Recreation',
-        'R': 'RACES',
-        'C': 'Corporation'
+        'CE': 'Transferee contact',
+        'CL': 'Licensee Contact',
+        'CR': 'Assignor or Transferor Contact',
+        'CS': 'Lessee Contact',
+        'E': 'Transferee',
+        'L': 'Licensee or Assignee',
+        'O': 'Owner',
+        'R': 'Assignor or Transferor',
+        'S': 'Lessee'
     },
     'applicant_type_code': {
         'B': 'Amateur Club',
