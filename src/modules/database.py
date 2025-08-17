@@ -709,7 +709,7 @@ class FCCDatabase:
         """
         return file_exists(self.db_path)
     
-    def remove_inactive_records(self):
+    def remove_inactive_records(self, args):
         """
         Remove all inactive license records from the database.
         
@@ -747,7 +747,10 @@ class FCCDatabase:
                 print(f"Sample of call signs to be deleted: {sample_text}")
                 print("\nThis action cannot be undone. Related records in other tables will also be deleted.")
                 
-                confirmation = input("\nAre you sure you want to continue? (yes/no): ").strip().lower()
+                if args.non_interactive:
+                    confirmation = "yes"
+                else:
+                    confirmation = input("\nAre you sure you want to continue? (yes/no): ").strip().lower()
                 
                 if confirmation != "yes":
                     print("Operation cancelled. No records were deleted.")

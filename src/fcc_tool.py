@@ -213,6 +213,8 @@ def main():
                          help='Rebuild database indexes to improve search performance')
     db_group.add_argument('--active-only', action='store_true',
                          help='Only keep active license records (license_status="A") in the database')
+    db_group.add_argument('--non-interactive', action='store_true', 
+                            help='Automatically accepts all interactive prompts.')
     
     # Query options
     query_group.add_argument('--callsign', metavar='CALLSIGN', 
@@ -266,7 +268,8 @@ def main():
         print(f"Force download: {args.force_download}")
         
         # If active-only is specified, warn the user and ask for confirmation
-        if args.active_only:
+        # Skip confirmation when --non-interactive is specified
+        if args.active_only and not args.non_interactive:
             print("\nWARNING: You have specified the --active-only flag with --update.")
             print("This will filter out all inactive license records during the update process.")
             print("Only records with license_status='A' (Active) will be included in the database.")
@@ -299,7 +302,8 @@ def main():
         print("Forcing download of the latest FCC database...")
         
         # If active-only is also specified, warn the user and ask for confirmation
-        if args.active_only:
+        # Skip confirmation when --non-interactive is specified
+        if args.active_only and not args.non_interactive:
             print("\nWARNING: You have specified the --active-only flag with --force-download.")
             print("This will completely rebuild the database with only active license records.")
             print("Only records with license_status='A' (Active) will be included in the database.")
@@ -328,7 +332,7 @@ def main():
         if not db.database_exists():
             print("Error: Database does not exist. Please run with --update first.")
             return
-        db.remove_inactive_records()
+        db.remove_inactive_records(args)
         return
     
     # Rebuild indexes
