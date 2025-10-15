@@ -8,4 +8,6 @@ COPY ./ ./
 
 RUN python -m pip install -r /app/src/requirements.txt --no-cache-dir --upgrade
 
-CMD ["python3", "src/fcc_tool.py", "--update", "--non-interactive"]
+RUN ln -s /app/src/data /data
+
+CMD ["python3", "src/fcc_tool.py", "--update", "--non-interactive", "--keep-files"]
