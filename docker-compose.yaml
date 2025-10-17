@@ -1,7 +1,7 @@
 services:
   fcculs-loader:
     build: .
-    # image: docker pull ghcr.io/sleuth56/fcculsloader:latest
+    # image: ghcr.io/sleuth56/fcculsloader:latest
     container_name: fcculs-loader
     restart: unless-stopped
     environment:
