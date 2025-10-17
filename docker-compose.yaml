@@ -1,0 +1,10 @@
+services:
+  fcculs-loader:
+    build: .
+    # image: docker pull ghcr.io/sleuth56/fcculsloader:latest
+    container_name: fcculs-loader
+    restart: unless-stopped
+    environment:
+      - CRON_SCHEDULE=0 3 * * 5  # Every Friday at 3:00 AM (change as needed)
+    volumes:
+      - ./data:/data # Directory where the fcc database file will be stored.
