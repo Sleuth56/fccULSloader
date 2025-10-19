@@ -17,4 +17,4 @@ RUN chmod +x /app/run.sh
 # Create log file
 RUN touch /var/log/cron.log
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["bash", "/app/entrypoint.sh"]
